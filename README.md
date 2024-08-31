@@ -8,6 +8,11 @@ Use this to:
 2) Get an exhaustive list of actions that are included in a policy and quickly search it for interesting actions.
 3) Investigate where dangerous or dubious actions are being used in your policies.
 
+## Installation
+```bash
+npm install -g @cloud-copilot/iam-expand
+```
+
 ```typescript
 import { expandIamActions } from '@cloud-copilot/iam-expand';
 
@@ -36,13 +41,13 @@ expandIamActions(['s3:Get*Tagging', 's3:Put*Tagging'])
 ```
 
 ## API
-`expandIamActions` is the main function that will expand the actions of the IAM policy. Takes a string or array of strings and returns an array of strings that the input matches.
+`expandIamActions(actionStringOrStrings: string | string[], overrideOptions?: Partial<ExpandIamActionsOptions>)` is the main function that will expand the actions of the IAM policy. Takes a string or array of strings and returns an array of strings that the input matches.
 
 ## Only Valid Values
 `expandIamActions` intends to only return valid actual actions, if any invalid values are passed in such as an invalid format or a service/action that does not exist, they will be left out of the output. There are options to override this behavior.
 
 ## Options
-`expandIamActions` takes an optional second argument that is an object with the following options:
+`expandIamActions` an optional second argument that is an object with the following options:
 
 ### `expandAsterik`
 By default, a single `*` not be expanded. We assume that if you want a list of all IAM actions there are other sources you will check, such as [@cloud-copilot/iam-data](https://github.com/cloud-copilot/iam-data). If you want to expand a single `*` you can set this option to `true`.
@@ -189,18 +194,22 @@ expandIamActions('r2:Get*Tagging', { errorOnMissingService: true })
 ```
 
 ## CLI
-There is a CLI available to expand IAM Actions!
+There is a CLI!
 
-### Install
+### Install Globally
 ```bash
 npm install -g @cloud-copilot/iam-expand
 ```
-or
+yarn (yarn does not automatically add peer dependencies, so need to add the data package explicitly)
 ```
+yarn global add @cloud-copilot/iam-data
 yarn global add @cloud-copilot/iam-expand
 ```
 
-
+### Run the sciprt in a project that has the package installed
+```bash
+npx @cloud-copilot/iam-expand
+```
 
 ### Simple Usage
 The simplest usage is to pass in the actions you want to expand.
