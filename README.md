@@ -39,7 +39,7 @@ expandIamActions(['s3:Get*Tagging', 's3:Put*Tagging'])
 `expandIamActions` is the main function that will expand the actions of the IAM policy. Takes a string or array of strings and returns an array of strings that the input matches.
 
 ## Only Valid Values
-`expandIamActions` intends to only return valid values, if any invalid values are passed in such as an invalid format or a service that does not exist, they will be left out of the output.
+`expandIamActions` intends to only return valid actual actions, if any invalid values are passed in such as an invalid format or a service/action that does not exist, they will be left out of the output. There are options to override this behavior.
 
 ## Options
 `expandIamActions` takes an optional second argument that is an object with the following options:
@@ -156,7 +156,7 @@ expandIamActions(['s3:Get*Tagging','ec2:*Tags'], {sort: true})
 
 ### `errorOnInvalidFormat`
 By default, if an invalid format is passed in, such as:
-*  `s3Get*Tagging` (missing a seperator) or
+*  `s3Get*Tagging` (missing a separator) or
 *  `s3:Get:Tagging*` (too many separators)
 
 it will be silenty ignored and left out of the output. If you want to throw an error when an invalid format is passed in you can set this option to `true`.
@@ -208,7 +208,7 @@ The simplest usage is to pass in the actions you want to expand.
 iam-expand s3:Get* s3:*Tag*
 ```
 
-You can pass in all options available through the api as dash seperated flags.
+You can pass in all options available through the api as dash separated flags.
 
 _Prints all matching actions for s3:Get*Tagging, s3:*Tag*, and ec2:* in alphabetical order with duplicates removed:_
 ```bash
