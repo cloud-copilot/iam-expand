@@ -1,4 +1,4 @@
-import { iamActionExists, iamActionsForService, iamServiceExists, iamServiceKeys } from '@cloud-copilot/iam-data'
+import { iamActionDetails, iamActionExists, iamActionsForService, iamServiceExists, iamServiceKeys } from '@cloud-copilot/iam-data'
 
 export enum InvalidActionBehavior {
   Remove = "Remove",
@@ -159,8 +159,9 @@ export function expandIamActions(actionStringOrStrings: string | string[], overr
   if(!actionString.includes('*')) {
     const actionExists = iamActionExists(service, wildcardActions)
     if(actionExists) {
-      return [actionString]
+      return [service + ":" + iamActionDetails(service, wildcardActions).name]
     }
+
     if(options.invalidActionBehavior === InvalidActionBehavior.Remove) {
       return []
     } else if(options.invalidActionBehavior === InvalidActionBehavior.Include) {

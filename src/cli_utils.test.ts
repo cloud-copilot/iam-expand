@@ -14,6 +14,7 @@ const extractScenarios = [
   {input: '  "s3:Get*", "s3:Put*"',      expected: ['s3:Get*', 's3:Put*']},
   {input: '  `s3:Get*`, `s3:Put*`',      expected: ['s3:Get*', 's3:Put*']},
   {input: `  's3:Get*', 's3:Put*'`,      expected: ['s3:Get*', 's3:Put*']},
+  {input: `  'resource-Groups:Get*'`,    expected: ['resource-Groups:Get*']},
   {input: `s3:Get*, s3:Put*`,            expected: ['s3:Get*', 's3:Put*']},
   {input: "s3:Put*",                     expected: ['s3:Put*']},
   {input: ":s3:Put*",                    expected: []},

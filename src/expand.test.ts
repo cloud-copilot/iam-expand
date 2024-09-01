@@ -1,4 +1,4 @@
-import { iamActionExists, iamActionsForService, iamServiceExists, iamServiceKeys } from '@cloud-copilot/iam-data'
+import { iamActionDetails, iamActionExists, iamActionsForService, iamServiceExists, iamServiceKeys } from '@cloud-copilot/iam-data'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { expandIamActions, InvalidActionBehavior } from "./expand.js"
 
@@ -92,17 +92,18 @@ describe("expand", () => {
   describe("invalid action name", () => {
     it('should return an action without wildcards if it is a valid action', () => {
       //Given actionString contains a valid action
-      const actionString = 's3:GetObject'
+      const actionString = 's3:getobject'
       //And s3 the service exists
       vi.mocked(iamServiceExists).mockReturnValue(true)
       //And the action does not
       vi.mocked(iamActionExists).mockReturnValue(true)
+      vi.mocked(iamActionDetails).mockReturnValue({name: 'GetObject'} as any)
 
       //When expand is called with actionString
       const result = expandIamActions(actionString)
 
       //Then result should be an array with the actionString
-      expect(result).toEqual([actionString])
+      expect(result).toEqual(['s3:GetObject'])
     })
 
     it("should remove an invalid action if invalidActionBehavior is Remove", () => {
@@ -518,6 +519,5 @@ describe("expand", () => {
       expect(result).toEqual(['ec2:DescribeInstances', 'ec2:DescribeVolumes', 's3:GetBucket', 's3:GetObject'])
     })
   })
-
 
 })
