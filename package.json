@@ -1,6 +1,6 @@
 {
   "name": "@cloud-copilot/iam-expand",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Expand AWS IAM Actions with Wildcards",
   "repository": {
     "type": "git",
@@ -12,6 +12,7 @@
       "require": "./dist/cjs/index.js"
     }
   },
+  "types": "dist/cjs/index.d.ts",
   "bin": {
     "iam-expand": "dist/cjs/cli.js"
   },
