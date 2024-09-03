@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { convertOptions, dashToCamelCase, extractActionsFromLineOfInput, parseStdInActions } from "./cli_utils";
+import { convertOptions, dashToCamelCase, extractActionsFromLineOfInput, parseStdIn } from "./cli_utils";
 import { InvalidActionBehavior } from './expand.js';
 import { readStdin } from './stdin';
 vi.mock('./stdin')
@@ -25,8 +25,8 @@ const extractScenarios = [
 const dashToCamelCaseScenarios = [
   {input: "--distinct", expected: "distinct"},
   {input: "--sort", expected: "sort"},
-  {input: "--expand-asterik", expected: "expandAsterik"},
-  {input: "--expand-service-asterik", expected: "expandServiceAsterik"},
+  {input: "--expand-asterisk", expected: "expandAsterisk"},
+  {input: "--expand-service-asterisk", expected: "expandServiceAsterisk"},
   {input: "--error-on-missing-service", expected: "errorOnMissingService"},
   {input: "--error-on-invalid-format", expected: "errorOnInvalidFormat"},
   {input: "--show-data-version", expected: "showDataVersion"},
@@ -105,27 +105,42 @@ describe('cli_utils', () => {
     })
   })
 
-  describe('parseStdInActions', () => {
-    it('should return an empty array if no data is provided', async () => {
+  describe('parseStdIn', () => {
+    it('should return an empty object if no data is provided', async () => {
       // Given no data is provided
       vi.mocked(readStdin).mockResolvedValue('')
 
       // When the actions are parsed
-      const result = await parseStdInActions({})
+      const result = await parseStdIn({})
 
-      // Then I should get an empty array
-      expect(result).toEqual([])
+      // Then I should get an empty object
+      expect(result).toEqual({})
     })
 
-    it('should return an array of actions from the data', async () => {
+    it('should return an array of actions from the data if it cannot be parsed', async () => {
       // Given there is data with actions in multiple lines
       vi.mocked(readStdin).mockResolvedValue('s3:GetObject\ns3:PutObject\ns3:DeleteObject\n')
 
       // When the actions are parsed
-      const result = await parseStdInActions({})
+      const result = await parseStdIn({})
 
       // Then I should get the expected actions
-      expect(result).toEqual(['s3:GetObject', 's3:PutObject', 's3:DeleteObject'])
+      expect(result).toEqual({strings: ['s3:GetObject', 's3:PutObject', 's3:DeleteObject']})
+    })
+
+    it('should return an object if the data can be parsed', async () => {
+      // Given there is data that can be parsed
+      const dataValue = {
+        Action: ["s3:GetObject"],
+        Version: "2012-10-17"
+      }
+      vi.mocked(readStdin).mockResolvedValue(JSON.stringify(dataValue))
+
+      // When the actions are parsed
+      const result = await parseStdIn({})
+
+      // Then I should get the expected object
+      expect(result).toEqual({object: dataValue})
     })
   })
 })

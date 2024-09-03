@@ -1,6 +1,6 @@
 {
   "name": "@cloud-copilot/iam-expand",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Expand AWS IAM Actions with Wildcards",
   "repository": {
     "type": "git",
@@ -18,7 +18,7 @@
   },
   "scripts": {
     "build": "npx tsc -p tsconfig.cjs.json && npx tsc -p tsconfig.esm.json && ./postbuild.sh",
-    "test": "npx vitest --run",
+    "test": "npx vitest --run --coverage",
     "prepare": "npm run build"
   },
   "keywords": [
@@ -33,10 +33,11 @@
   "homepage": "https://github.com/cloud-copilot/iam-expand#readme",
   "devDependencies": {
     "@types/node": "^22.5.0",
+    "@vitest/coverage-v8": "^2.0.5",
     "typescript": "^5.5.4",
     "vitest": "^2.0.5"
   },
   "peerDependencies": {
-    "@cloud-copilot/iam-data": ">=0.2.0 <1.0.0"
+    "@cloud-copilot/iam-data": ">=0.3.0 <1.0.0"
   }
 }

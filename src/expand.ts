@@ -16,14 +16,14 @@ export interface ExpandIamActionsOptions {
    * If false, a single `*` will be returned as is
    * Default: false
    */
-  expandAsterik: boolean
+  expandAsterisk: boolean
 
   /**
    * If true, `service:*` will be expanded to all actions for that service
    * If false, `service:*` will be returned as is
    * Default: false
    */
-  expandServiceAsterik: boolean
+  expandServiceAsterisk: boolean
 
   /**
    * If true, an error will be thrown if the action string is not in the correct format
@@ -66,8 +66,8 @@ export interface ExpandIamActionsOptions {
 }
 
 const defaultOptions: ExpandIamActionsOptions = {
-  expandAsterik: false,
-  expandServiceAsterik: false,
+  expandAsterisk: false,
+  expandServiceAsterisk: false,
   errorOnInvalidFormat: false,
   errorOnMissingService: false,
   invalidActionBehavior: InvalidActionBehavior.Remove,
@@ -75,7 +75,7 @@ const defaultOptions: ExpandIamActionsOptions = {
   sort: false
 }
 
-const allAsteriksPattern = /^\*+$/i
+const allAsterisksPattern = /^\*+$/i
 
 /**
  * Expands an IAM action string that contains wildcards.
@@ -88,7 +88,7 @@ const allAsteriksPattern = /^\*+$/i
  * @param overrideOptions Options to override the default behavior
  * @returns An array of expanded action strings flattend to a single array
  */
-export function expandIamActions(actionStringOrStrings: string | string[], overrideOptions?: Partial<ExpandIamActionsOptions>): string[] {
+export async function expandIamActions(actionStringOrStrings: string | string[], overrideOptions?: Partial<ExpandIamActionsOptions>): Promise<string[]> {
   const options = {...defaultOptions, ...overrideOptions}
 
   if(!actionStringOrStrings) {
@@ -97,7 +97,12 @@ export function expandIamActions(actionStringOrStrings: string | string[], overr
   }
 
   if(Array.isArray(actionStringOrStrings)) {
-    let allMatches = actionStringOrStrings.flatMap(actionString => expandIamActions(actionString, options))
+    const actionLists = await Promise.all(actionStringOrStrings.map(async (actionString) => {
+      return expandIamActions(actionString, options);
+    }))
+
+    let allMatches = actionLists.flat()
+
     if(options.distinct) {
       const aSet = new Set<string>()
       allMatches = allMatches.filter((value) => {
@@ -116,12 +121,16 @@ export function expandIamActions(actionStringOrStrings: string | string[], overr
 
   const actionString = actionStringOrStrings.trim()
 
-  if(actionString.match(allAsteriksPattern)) {
-    if(options.expandAsterik) {
+  if(actionString.match(allAsterisksPattern)) {
+    if(options.expandAsterisk) {
       //If that's really what you want...
-      return iamServiceKeys().flatMap(
-        service => iamActionsForService(service).map(action => `${service}:${action}`)
-      )
+      const allActions = []
+      const serviceKeys = await iamServiceKeys()
+      for await (const service of serviceKeys) {
+        const serviceActions = await iamActionsForService(service)
+        allActions.push(...serviceActions.map(action => `${service}:${action}`))
+      }
+      return allActions
     }
     return ['*']
   }
@@ -142,24 +151,26 @@ export function expandIamActions(actionStringOrStrings: string | string[], overr
   }
 
   const [service, wildcardActions] = parts.map(part => part.toLowerCase())
-  if(!iamServiceExists(service)) {
+  if(!await iamServiceExists(service)) {
     if(options.errorOnMissingService) {
       throw new Error(`Service not found: ${service}`)
     }
     return []
   }
 
-  if(wildcardActions.match(allAsteriksPattern)) {
-    if(options.expandServiceAsterik) {
-      return iamActionsForService(service).map(action => `${service}:${action}`)
+  if(wildcardActions.match(allAsterisksPattern)) {
+    if(options.expandServiceAsterisk) {
+      const actionsForService = await iamActionsForService(service)
+      return actionsForService.map(action => `${service}:${action}`)
     }
     return [`${service}:*`]
   }
 
   if(!actionString.includes('*')) {
-    const actionExists = iamActionExists(service, wildcardActions)
+    const actionExists = await iamActionExists(service, wildcardActions)
     if(actionExists) {
-      return [service + ":" + iamActionDetails(service, wildcardActions).name]
+      const details = await iamActionDetails(service, wildcardActions)
+      return [service + ":" + details.name]
     }
 
     if(options.invalidActionBehavior === InvalidActionBehavior.Remove) {
@@ -174,7 +185,7 @@ export function expandIamActions(actionStringOrStrings: string | string[], overr
     }
   }
 
-  const allActions = iamActionsForService(service)
+  const allActions = await iamActionsForService(service)
   const pattern = "^" + wildcardActions.replace(/\*/g, '.*?') + "$"
   const regex = new RegExp(pattern, 'i')
   const matchingActions = allActions.filter(action => regex.test(action)).map(action => `${service}:${action}`)

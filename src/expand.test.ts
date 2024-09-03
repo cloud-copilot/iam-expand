@@ -10,48 +10,48 @@ beforeEach(() => {
 })
 
 describe("expand", () => {
-  it("should return an empty array when actionString is null", () => {
+  it("should return an empty array when actionString is null", async () => {
     //Given actionString is null
     const actionString = null
     //When expand is called with actionString
-    const result = expandIamActions(actionString as any)
+    const result = await expandIamActions(actionString as any)
     //Then result should be an empty array
     expect(result).toEqual([])
   })
 
-  it("should return '*' when actionString is '*' and expandAsterik is false", () => {
+  it("should return '*' when actionString is '*' and expandAsterisk is false", async () => {
     //Given actionString is '*'
     const actionString = '*'
     //When expand is called with actionString
-    const result = expandIamActions(actionString)
+    const result = await expandIamActions(actionString)
     //Then result should be '*'
     expect(result).toEqual(['*'])
   })
 
-  it('should return "*" when action string multiple asteriks and expandAsterik is false', () => {
-    //Given actionString is multiple asteriks
+  it('should return "*" when action string multiple asterisks and expandAsterisk is false', async () => {
+    //Given actionString is multiple asterisks
     const actionString = '***'
 
-    //And expandAsterik is false
-    const options = { expandAsterik: false }
+    //And expandAsterisk is false
+    const options = { expandAsterisk: false }
 
     //When expand is called with actionString and options
-    const result = expandIamActions(actionString, options)
+    const result = await expandIamActions(actionString, options)
 
     //Then result should be '*'
     expect(result).toEqual(['*'])
   })
 
-  it("should expand all actions for all services when actionString is '*' and expandAsterik is true", () => {
+  it("should expand all actions for all services when actionString is '*' and expandAsterisk is true", async () => {
     //Given actionString is '*'
     const actionString = '*'
-    //And expandAsterik is true
-    const options = { expandAsterik: true }
+    //And expandAsterisk is true
+    const options = { expandAsterisk: true }
     //And there are services
-    vi.mocked(iamServiceKeys).mockReturnValue(['s3', 'ec2'])
+    vi.mocked(iamServiceKeys).mockResolvedValue(['s3', 'ec2'])
 
     //And there are actions for the services
-    vi.mocked(iamActionsForService).mockImplementation(service => {
+    vi.mocked(iamActionsForService).mockImplementation(async (service) => {
       if(service === 's3') {
         return ['action1', 'action2']
       }
@@ -61,10 +61,8 @@ describe("expand", () => {
       return []
     })
 
-
-
     //When expand is called with actionString and options
-    const result = expandIamActions(actionString, options)
+    const result = await expandIamActions(actionString, options)
     //Then result should be an array of all actions for all services
     expect(result.sort()).toEqual([
       'ec2:action3',
@@ -74,116 +72,118 @@ describe("expand", () => {
     ])
   })
 
-  it("should do a case insensitive match for the service in the action string", () => {
+  it("should do a case insensitive match for the service in the action string", async () => {
     //Given actionString is 'S3:GetObject'
     const actionString = 'S3:get*'
     //And s3 service exists
-    vi.mocked(iamServiceExists).mockImplementation((s) => s === 's3')
+    vi.mocked(iamServiceExists).mockImplementation(async (s) => s === 's3')
     //And there are matching actions
-    vi.mocked(iamActionsForService).mockReturnValue(['GetObject'])
+    vi.mocked(iamActionsForService).mockResolvedValue(['GetObject'])
 
     //When expand is called with actionString
-    const result = expandIamActions(actionString)
+    const result = await expandIamActions(actionString)
 
     //Then result should be an array with the actionString
     expect(result).toEqual(['s3:GetObject'])
   })
 
   describe("invalid action name", () => {
-    it('should return an action without wildcards if it is a valid action', () => {
+    it('should return an action without wildcards if it is a valid action', async () => {
       //Given actionString contains a valid action
       const actionString = 's3:getobject'
       //And s3 the service exists
-      vi.mocked(iamServiceExists).mockReturnValue(true)
+      vi.mocked(iamServiceExists).mockResolvedValue(true)
       //And the action does not
-      vi.mocked(iamActionExists).mockReturnValue(true)
-      vi.mocked(iamActionDetails).mockReturnValue({name: 'GetObject'} as any)
+      vi.mocked(iamActionExists).mockResolvedValue(true)
+      vi.mocked(iamActionDetails).mockResolvedValue({name: 'GetObject'} as any)
 
       //When expand is called with actionString
-      const result = expandIamActions(actionString)
+      const result = await expandIamActions(actionString)
 
       //Then result should be an array with the actionString
       expect(result).toEqual(['s3:GetObject'])
     })
 
-    it("should remove an invalid action if invalidActionBehavior is Remove", () => {
+    it("should remove an invalid action if invalidActionBehavior is Remove", async () => {
       //Given actionString contains an invalid action
       const actionString = 's3:DoSomethingDumb'
       //And invalidActionBehavior is Remove
       const options = { invalidActionBehavior: InvalidActionBehavior.Remove }
       //And s3 the service exists
-      vi.mocked(iamServiceExists).mockReturnValue(true)
+      vi.mocked(iamServiceExists).mockResolvedValue(true)
       //And the action does not
-      vi.mocked(iamActionExists).mockReturnValue(false)
+      vi.mocked(iamActionExists).mockResolvedValue(false)
 
       //When expand is called with actionString
-      const result = expandIamActions(actionString, options)
+      const result = await expandIamActions(actionString, options)
 
       //Then result should be an array with the valid action
       expect(result).toEqual([])
     })
 
-    it("should include an invalid action if invalidActionBehavior is Include", () => {
+    it("should include an invalid action if invalidActionBehavior is Include", async () => {
       //Given actionString contains an invalid action
       const actionString = 's3:DoSomethingSilly'
       //And invalidActionBehavior is Include
       const options = { invalidActionBehavior: InvalidActionBehavior.Include }
       //And s3 the service exists
-      vi.mocked(iamServiceExists).mockReturnValue(true)
+      vi.mocked(iamServiceExists).mockResolvedValue(true)
       //And the action does not
-      vi.mocked(iamActionExists).mockReturnValue(false)
+      vi.mocked(iamActionExists).mockResolvedValue(false)
 
       //When expand is called with actionString
-      const result = expandIamActions(actionString, options)
+      const result = await expandIamActions(actionString, options)
 
       //Then result should be an array with the invalid action
       expect(result).toEqual([actionString])
     })
 
-    it('should throw an error if the action is invalid and invalidActionBehavior is Error', () => {
+    it('should throw an error if the action is invalid and invalidActionBehavior is Error', async () => {
       //Given actionString contains an invalid action
       const actionString = 's3:AbsurdlyInvalidAction'
       //And invalidActionBehavior is Error
       const options = { invalidActionBehavior: InvalidActionBehavior.Error }
       //And s3 the service exists
-      vi.mocked(iamServiceExists).mockReturnValue(true)
+      vi.mocked(iamServiceExists).mockResolvedValue(true)
       //And the action does not
-      vi.mocked(iamActionExists).mockReturnValue(false)
+      vi.mocked(iamActionExists).mockResolvedValue(false)
 
       //When expand is called with actionString
       //Then an error should be thrown
-      expect(() => expandIamActions(actionString, options)).toThrowError('Invalid action')
+      expect(
+        expandIamActions(actionString, options)
+      ).rejects.toThrowError('Invalid action')
     })
   })
 
   describe("when the actions string is in the wrong format", () => {
-    it("should return an empty array when there are too many parts and errorOnInvalidFormat is false", () => {
+    it("should return an empty array when there are too many parts and errorOnInvalidFormat is false", async () => {
       //Given actionString is in the wrong format
       const actionString = 's3:GetObject:Extra*'
       //And errorOnInvalidFormat is false
       const options = { errorOnInvalidFormat: false }
 
       //When expand is called with actionString
-      const result = expandIamActions(actionString, options)
+      const result = await expandIamActions(actionString, options)
 
       //Then result should be an empty array
       expect(result).toEqual([])
     })
 
-    it("should return an empty array when there are too few parts and errorOnInvalidFormat is false", () => {
+    it("should return an empty array when there are too few parts and errorOnInvalidFormat is false", async () => {
       //Given actionString has no :
       const actionString = 's3GetObject*'
       //And errorOnInvalidFormat is false
       const options = { errorOnInvalidFormat: false }
 
       //When expand is called with actionString
-      const result = expandIamActions(actionString, options)
+      const result = await expandIamActions(actionString, options)
 
       //Then result should be an empty array
       expect(result).toEqual([])
     })
 
-    it("should throw an error when there are too many parts and errorOnInvalidFormat is true", () => {
+    it("should throw an error when there are too many parts and errorOnInvalidFormat is true", async () => {
       //Given actionString is in the wrong format
       const actionString = 's3:GetObject:Extra*'
       //And errorOnInvalidFormat is true
@@ -191,10 +191,12 @@ describe("expand", () => {
 
       //When expand is called with actionString
       //Then an error should be thrown
-      expect(() => expandIamActions(actionString, options)).toThrowError('Invalid action format')
+      expect(
+        () => expandIamActions(actionString, options)
+      ).rejects.toThrowError('Invalid action format')
     })
 
-    it("should throw an error when there are too few parts and errorOnInvalidFormat is true", () => {
+    it("should throw an error when there are too few parts and errorOnInvalidFormat is true", async () => {
       //Given actionString has no :
       const actionString = 's3GetObject*'
       //And errorOnInvalidFormat is true
@@ -202,25 +204,27 @@ describe("expand", () => {
 
       //When expand is called with actionString
       //Then an error should be thrown
-      expect(() => expandIamActions(actionString, options)).toThrowError('Invalid action format')
+      expect(
+        () => expandIamActions(actionString, options)
+      ).rejects.toThrowError('Invalid action format')
     })
   })
 
   describe("when the service in the action string does not exist", () => {
-    it("should return an empty array when errorOnMissingService is false", () => {
+    it("should return an empty array when errorOnMissingService is false", async () => {
       //Given actionString contains a service that does not exist
       const actionString = 'fake:GetObject*'
       //And errorOnMissingService is false
       const options = { errorOnMissingService: false }
 
       //When expand is called with actionString
-      const result = expandIamActions(actionString, options)
+      const result = await expandIamActions(actionString, options)
 
       //Then result should be an empty array
       expect(result).toEqual([])
     })
 
-    it("should throw an error when errorOnMissingService is true", () => {
+    it("should throw an error when errorOnMissingService is true", async () => {
       //Given actionString contains a service that does not exist
       const actionString = 'fake:GetObject*'
       //And errorOnMissingService is true
@@ -228,57 +232,59 @@ describe("expand", () => {
 
       //When expand is called with actionString
       //Then an error should be thrown
-      expect(() => expandIamActions(actionString, options)).toThrowError('Service not found')
+      expect(
+        () => expandIamActions(actionString, options)
+      ).rejects.toThrowError('Service not found')
     })
   })
 
   describe("when the action string contains a wildcard for a service", () => {
-    it("should expand not expand the wildcard when expandServiceAsterik is false", () => {
+    it("should expand not expand the wildcard when expandServiceAsterisk is false", async () => {
       //Given actionString is 's3:*'
       const actionString = 's3:*'
-      //And expandServiceAsterik is false
-      const options = { expandServiceAsterik: false }
+      //And expandServiceAsterisk is false
+      const options = { expandServiceAsterisk: false }
       //And s3 service exists
-      vi.mocked(iamServiceExists).mockReturnValue(true)
+      vi.mocked(iamServiceExists).mockResolvedValue(true)
       //And there are matching actions
-      vi.mocked(iamActionsForService).mockReturnValue(['GetObject', 'PutObject'])
+      vi.mocked(iamActionsForService).mockResolvedValue(['GetObject', 'PutObject'])
 
       //When expand is called with actionString
-      const result = expandIamActions(actionString, options)
+      const result = await expandIamActions(actionString, options)
 
       //Then result should be an array with the original string
       expect(result).toEqual([actionString])
     })
 
-    it("should expand not expand the wildcard when there are multiple asteriks and expandServiceAsterik is false", () => {
-      //Given actionString has multiple asteriks for the actions
+    it("should expand not expand the wildcard when there are multiple asterisks and expandServiceAsterisk is false", async () => {
+      //Given actionString has multiple asterisks for the actions
       const actionString = 's3:****'
-      //And expandServiceAsterik is false
-      const options = { expandServiceAsterik: false }
+      //And expandServiceAsterisk is false
+      const options = { expandServiceAsterisk: false }
       //And s3 service exists
-      vi.mocked(iamServiceExists).mockReturnValue(true)
+      vi.mocked(iamServiceExists).mockResolvedValue(true)
       //And there are matching actions
-      vi.mocked(iamActionsForService).mockReturnValue(['GetObject', 'PutObject'])
+      vi.mocked(iamActionsForService).mockResolvedValue(['GetObject', 'PutObject'])
 
       //When expand is called with actionString
-      const result = expandIamActions(actionString, options)
+      const result = await expandIamActions(actionString, options)
 
       //Then result should be an array with the original string
       expect(result).toEqual(['s3:*'])
     })
 
-    it("should expand the wildcard when expandServiceAsterik is true", () => {
+    it("should expand the wildcard when expandServiceAsterisk is true", async () => {
       //Given actionString is 's3:*'
       const actionString = 's3:*'
-      //And expandServiceAsterik is true
-      const options = { expandServiceAsterik: true }
+      //And expandServiceAsterisk is true
+      const options = { expandServiceAsterisk: true }
       //And s3 service exists
-      vi.mocked(iamServiceExists).mockReturnValue(true)
+      vi.mocked(iamServiceExists).mockResolvedValue(true)
       //And there are matching actions
-      vi.mocked(iamActionsForService).mockReturnValue(['GetObject', 'PutObject'])
+      vi.mocked(iamActionsForService).mockResolvedValue(['GetObject', 'PutObject'])
 
       //When expand is called with actionString
-      const result = expandIamActions(actionString, options)
+      const result = await expandIamActions(actionString, options)
 
       //Then result should be an array of actions
       expect(result).toEqual([
@@ -290,13 +296,13 @@ describe("expand", () => {
 
 
   describe("when the action string contains wildcards", () => {
-    it('should expand the wildcard actions at the end', () => {
+    it('should expand the wildcard actions at the end', async () => {
       //Given actionString is 's3:Get*'
       const actionString = 's3:Get*'
       //And s3 service exists
-      vi.mocked(iamServiceExists).mockReturnValue(true)
+      vi.mocked(iamServiceExists).mockResolvedValue(true)
       //And there are matching actions
-      vi.mocked(iamActionsForService).mockReturnValue([
+      vi.mocked(iamActionsForService).mockResolvedValue([
         'GetObject',
         'GetObjectAcl',
         'GetObjectTagging',
@@ -307,7 +313,7 @@ describe("expand", () => {
       ])
 
       //When expand is called with actionString
-      const result = expandIamActions(actionString)
+      const result = await expandIamActions(actionString)
       //Then result should be an array of actions
       expect(result).toEqual([
         's3:GetObject',
@@ -317,13 +323,13 @@ describe("expand", () => {
       ])
     })
 
-    it('should expand the wildcard actions at the beginning', () => {
+    it('should expand the wildcard actions at the beginning', async () => {
       //Given actionString is 's3:*Object'
       const actionString = 's3:*Object'
       //And s3 service exists
       vi.mocked(iamServiceExists).mockReturnValue(true)
       //And there are matching actions
-      vi.mocked(iamActionsForService).mockReturnValue([
+      vi.mocked(iamActionsForService).mockResolvedValue([
         'GetObject',
         'GetObjectAcl',
         'GetObjectTagging',
@@ -334,7 +340,7 @@ describe("expand", () => {
       ])
 
       //When expand is called with actionString
-      const result = expandIamActions(actionString)
+      const result = await expandIamActions(actionString)
       //Then result should be an array of actions
       expect(result).toEqual([
         's3:GetObject',
@@ -342,13 +348,13 @@ describe("expand", () => {
       ])
     })
 
-    it('should expand the wildcard actions in the middle', () => {
+    it('should expand the wildcard actions in the middle', async () => {
       //Given actionString is 's3:Get*Tagging'
       const actionString = 's3:Get*Tagging'
       //And s3 service exists
-      vi.mocked(iamServiceExists).mockReturnValue(true)
+      vi.mocked(iamServiceExists).mockResolvedValue(true)
       //And there are matching actions
-      vi.mocked(iamActionsForService).mockReturnValue([
+      vi.mocked(iamActionsForService).mockResolvedValue([
         'GetObject',
         'GetObjectAcl',
         'GetObjectTagging',
@@ -360,7 +366,7 @@ describe("expand", () => {
       ])
 
       //When expand is called with actionString
-      const result = expandIamActions(actionString)
+      const result = await expandIamActions(actionString)
       //Then result should be an array of actions
       expect(result).toEqual([
         's3:GetObjectTagging',
@@ -368,13 +374,13 @@ describe("expand", () => {
       ])
     })
 
-    it('should expand multiple wildcards', () => {
+    it('should expand multiple wildcards', async () => {
       //Given actionString is 's3:Get*Tagging*'
       const actionString = 's3:Get*Tagging*'
       //And s3 service exists
-      vi.mocked(iamServiceExists).mockReturnValue(true)
+      vi.mocked(iamServiceExists).mockResolvedValue(true)
       //And there are matching actions
-      vi.mocked(iamActionsForService).mockReturnValue([
+      vi.mocked(iamActionsForService).mockResolvedValue([
         'GetObject',
         'GetObjectAcl',
         'GetObjectTagging',
@@ -388,7 +394,7 @@ describe("expand", () => {
       ])
 
       //When expand is called with actionString
-      const result = expandIamActions(actionString)
+      const result = await expandIamActions(actionString)
       //Then result should be an array of actions
       expect(result).toEqual([
         's3:GetObjectTagging',
@@ -400,27 +406,27 @@ describe("expand", () => {
   })
 
   describe("when actionStrings is an array", () => {
-    it("should return an empty array when actionStrings is an empty array", () => {
+    it("should return an empty array when actionStrings is an empty array", async () => {
       //Given actionStrings is an empty array
       const actionStrings: string[] = []
 
       //When expand is called with actionStrings
-      const result = expandIamActions(actionStrings)
+      const result = await expandIamActions(actionStrings)
 
       //Then result should be an empty array
       expect(result).toEqual([])
     })
 
-    it("should return an array of expanded actions when actionStrings is an array of action strings", () => {
+    it("should return an array of expanded actions when actionStrings is an array of action strings", async () => {
       //Given actionStrings is an array of action strings
       const actionStrings = [
         's3:Get*',
         'ec2:*Instances'
       ]
       //And s3 and ec2 services exist
-      vi.mocked(iamServiceExists).mockReturnValue(true)
+      vi.mocked(iamServiceExists).mockResolvedValue(true)
       //And there are actions for the services
-      vi.mocked(iamActionsForService).mockImplementation(service => {
+      vi.mocked(iamActionsForService).mockImplementation(async (service) => {
         if(service === 's3') {
           return ['GetObject', 'GetObjectTagging', 'PutObject', 'PutObjectTagging']
         }
@@ -431,7 +437,7 @@ describe("expand", () => {
       })
 
       //When expand is called with actionStrings
-      const result = expandIamActions(actionStrings)
+      const result = await expandIamActions(actionStrings)
 
       //Then result should be an array of expanded actions
       expect(result.sort()).toEqual([
@@ -444,44 +450,44 @@ describe("expand", () => {
   })
 
   describe("distinct option", () => {
-    it('should return all values when distinct is false', () => {
+    it('should return all values when distinct is false', async () => {
       //Given two action strings
       const actionString = ['s3:Get*','s3:*Object']
       //And s3 service exists
-      vi.mocked(iamServiceExists).mockReturnValue(true)
+      vi.mocked(iamServiceExists).mockResolvedValue(true)
       //And there are matching actions
-      vi.mocked(iamActionsForService).mockReturnValue(['GetObject', 'PutObject', 'GetOtherObject'])
+      vi.mocked(iamActionsForService).mockResolvedValue(['GetObject', 'PutObject', 'GetOtherObject'])
 
       //When expand is called with actionString and distinct is false
-      const result = expandIamActions(actionString, { distinct: false })
+      const result = await expandIamActions(actionString, { distinct: false })
 
       //Then result should be an array of actions, even if they are duplicates
       expect(result).toEqual(['s3:GetObject', 's3:GetOtherObject', 's3:GetObject', 's3:PutObject', 's3:GetOtherObject'])
     })
 
-    it('should return only unique values when distinct is true, and maintain order', () => {
+    it('should return only unique values when distinct is true, and maintain order', async () => {
       //Given two action strings
       const actionString = ['s3:Get*','s3:*Object']
       //And s3 service exists
-      vi.mocked(iamServiceExists).mockReturnValue(true)
+      vi.mocked(iamServiceExists).mockResolvedValue(true)
       //And there are matching actions
-      vi.mocked(iamActionsForService).mockReturnValue(['GetObject', 'PutObject', 'GetOtherObject'])
+      vi.mocked(iamActionsForService).mockResolvedValue(['GetObject', 'PutObject', 'GetOtherObject'])
 
       //When expand is called with actionStrings and distinct is true
-      const result = expandIamActions(actionString, { distinct: true })
+      const result = await expandIamActions(actionString, { distinct: true })
       //Then result should be an array of unique actions
       expect(result).toEqual(['s3:GetObject', 's3:GetOtherObject', 's3:PutObject'])
     })
   })
 
   describe("sort option", () => {
-    it('should return values in the order they were expanded when sort is false', () => {
+    it('should return values in the order they were expanded when sort is false', async () => {
       //Given two action strings
       const actionString = ['s3:Get*','ec2:Describe*']
       //And s3 service exists
-      vi.mocked(iamServiceExists).mockReturnValue(true)
+      vi.mocked(iamServiceExists).mockResolvedValue(true)
       //And there are matching actions
-      vi.mocked(iamActionsForService).mockImplementation(service => {
+      vi.mocked(iamActionsForService).mockImplementation(async (service) => {
         if(service === 's3') {
           return ['GetObject', 'GetBucket']
         }
@@ -492,18 +498,18 @@ describe("expand", () => {
       })
 
       //When expand is called with actionStrings and sort is false
-      const result = expandIamActions(actionString, { sort: false })
+      const result = await expandIamActions(actionString, { sort: false })
       //Then result should be an array of actions in the order they were expanded
       expect(result).toEqual(['s3:GetObject', 's3:GetBucket', 'ec2:DescribeInstances', 'ec2:DescribeVolumes'])
     })
 
-    it('should return values sorted when sort is true', () => {
+    it('should return values sorted when sort is true', async () => {
       //Given two action strings
       const actionString = ['s3:Get*','ec2:Describe*']
       //And s3 service exists
-      vi.mocked(iamServiceExists).mockReturnValue(true)
+      vi.mocked(iamServiceExists).mockResolvedValue(true)
       //And there are matching actions
-      vi.mocked(iamActionsForService).mockImplementation(service => {
+      vi.mocked(iamActionsForService).mockImplementation(async (service) => {
         if(service === 's3') {
           return ['GetObject', 'GetBucket']
         }
@@ -514,7 +520,7 @@ describe("expand", () => {
       })
 
       //When expand is called with actionStrings and sort is false
-      const result = expandIamActions(actionString, { sort: true })
+      const result = await expandIamActions(actionString, { sort: true })
       //Then result should be an array of actions in the order they were expanded
       expect(result).toEqual(['ec2:DescribeInstances', 'ec2:DescribeVolumes', 's3:GetBucket', 's3:GetObject'])
     })

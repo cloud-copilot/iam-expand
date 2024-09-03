@@ -1,5 +1,6 @@
 
 import { ExpandIamActionsOptions, InvalidActionBehavior } from "./expand.js";
+import { expandJsonDocument } from "./expand_file.js";
 import { readStdin } from "./stdin.js";
 
 interface CliOptions extends ExpandIamActionsOptions {
@@ -64,15 +65,20 @@ export function extractActionsFromLineOfInput(line: string): string[] {
  *
  * @returns an array of strings from stdin
  */
-export async function parseStdInActions(options: Partial<CliOptions>): Promise<string[]> {
+export async function parseStdIn(options: Partial<CliOptions>): Promise<{strings?: string[], object?: any}> {
   const delay = options.readWaitTime ? parseInt(options.readWaitTime.replaceAll(/\D/g, '')) : undefined
   const data = await readStdin(delay)
   if(data.length === 0) {
-    return []
+    return {}
   }
 
-  const lines = data.split('\n')
+  try {
+    const object = await expandJsonDocument(options, JSON.parse(data))
+    return {object}
+  } catch (err: any) {}
 
+
+  const lines = data.split('\n')
   const actions = lines.flatMap(line => extractActionsFromLineOfInput(line))
-  return actions
+  return {strings: actions}
 }

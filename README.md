@@ -49,7 +49,7 @@ expandIamActions(['s3:Get*Tagging', 's3:Put*Tagging'])
 ## Options
 `expandIamActions` an optional second argument that is an object with the following options:
 
-### `expandAsterik`
+### `expandAsterisk`
 By default, a single `*` not be expanded. We assume that if you want a list of all IAM actions there are other sources you will check, such as [@cloud-copilot/iam-data](https://github.com/cloud-copilot/iam-data). If you want to expand a single `*` you can set this option to `true`.
 
 ```typescript
@@ -60,12 +60,12 @@ expandIamActions('*')
 ['*']
 
 //Returns the expanded value
-expandIamActions('*', { expandAsterik: true })
+expandIamActions('*', { expandAsterisk: true })
 [
   //Many many strings. 🫢
 ]
 ```
-### `expandServiceAsterik`
+### `expandServiceAsterisk`
 By default, a service name followed by a `*` (such as `s3:*` or `lambda:*`) will not be expanded. If you want to expand these you can set this option to `true`.
 
 ```typescript
@@ -76,7 +76,7 @@ expandIamActions('s3:*')
 ['s3:*']
 
 //Returns the expanded value
-expandIamActions('s3:*', { expandServiceAsterik: true })
+expandIamActions('s3:*', { expandServiceAsterisk: true })
 [
   //All the s3 actions. 🫢
 ]
@@ -221,7 +221,7 @@ You can pass in all options available through the api as dash separated flags.
 
 _Prints all matching actions for s3:Get*Tagging, s3:*Tag*, and ec2:* in alphabetical order with duplicates removed:_
 ```bash
-iam-expand s3:Get*Tagging s3:*Tag* ec2:* --expand-service-asterik --distinct --sort
+iam-expand s3:Get*Tagging s3:*Tag* ec2:* --expand-service-asterisk --distinct --sort
 ```
 
 ### Help
@@ -231,9 +231,84 @@ iam-expand
 ```
 
 ### Read from stdin
-The CLI is able to read from stdin, and this is really meant to be abused. It essentialy greps the content for anything resembling and action and expands it. Throw anything at it and it will find all the actions it can and expand them.
-
 If no actions are passed as arguments, the CLI will read from stdin.
+
+#### Expanding JSON input
+If the input is a valid json document, the CLI will find every instance of `Action` that is a string
+or an array of strings and expand them. This is useful for finding all the actions in a policy document or set of documents.
+
+Given `policy.json`
+```json
+
+ {
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": "s3:Get*Tagging",
+      "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": ["s3:Get*Tagging", "s3:Put*Tagging"],
+      "Resource": "*"
+    }
+  ]
+ }
+```
+
+```bash
+cat policy.json | iam-expand > expanded-policy.json
+```
+
+Gives this file in `expanded-policy.json`
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      // Was "s3:Get*Tagging"
+      "Action": [
+        "s3:GetBucketTagging",
+        "s3:GetJobTagging",
+        "s3:GetObjectTagging",
+        "s3:GetObjectVersionTagging",
+        "s3:GetStorageLensConfigurationTagging"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
+      // Was ["s3:Get*Tagging", "s3:Put*Tagging"]
+      "Action": [
+        "s3:GetBucketTagging",
+        "s3:GetJobTagging",
+        "s3:GetObjectTagging",
+        "s3:GetObjectVersionTagging",
+        "s3:GetStorageLensConfigurationTagging",
+        "s3:PutBucketTagging",
+        "s3:PutJobTagging",
+        "s3:PutObjectTagging",
+        "s3:PutObjectVersionTagging",
+        "s3:PutStorageLensConfigurationTagging"
+      ],
+      "Resource": "*"
+    }
+  ]
+ }
+```
+
+You can also use this to expand the actions from the output of commands.
+```bash
+aws iam get-account-authorization-details --output json | iam-expand --expand-service-asterisk --read-wait-time=20_000 > expanded-inline-policies.json
+# Now you can search the output for actions you are interested in
+grep "kms:DisableKey" expanded-inline-policies.json
+```
+_--expand-service-asterisk makes sure kms:* is expaneded out so you can find the DisableKey action. --read-wait-time=20_000 gives the cli command more time to return it's first byte of output_
+
+#### Expanding arbitrary input
+If the input from stdin is not json, the content is searched for actions that are then expanded. This is really meant to be abused. It essentialy greps the content for anything resembling and action and expands it. Throw anything at it and it will find all the actions it can and expand them.
 
 You can echo some content:
 ```bash
@@ -243,11 +318,6 @@ echo "s3:Get*Tagging" | iam-expand
 You can pull out part of a json file and pipe it in:
 ```bash
 cat policy.json | jq '.Statement[].Action' | iam-expand
-```
-
-Or just send in the whole file:
-```bash
-cat policy.json | iam-expand
 ```
 
 Or some Terraform:
@@ -265,14 +335,8 @@ Or even some HTML:
 curl "https://docs.aws.amazon.com/aws-managed-policy/latest/reference/SecurityAudit.html" | iam-expand
 ```
 
-Or the output of a command:
+Or the output of any command.
 
-This will search for all inline policies that have have
-```bash
-aws iam get-account-authorization-details --output json | iam-expand --expand-service-asterik --read-wait-time=20_000 | grep kms:DisableKey
-```
-_--expand-service-asterik makes sure kms:* is expaneded out so you can find the DisableKey action. --read-wait-time=20_000 gives the cli command more time to return it's first byte of output_
-
-Because of the likelyhood of finding an aseterik `*` in the input, the stdin option will not find or expand a single `*` even if `--expand-asterik` is passed.
+Because of the likelyhood of finding an aseterik `*` in the input; if the value to stdin is not a valid json document the stdin option will not find or expand a single `*` even if `--expand-asterisk` is passed.
 
 Please give this anything you can think of and open an issue if you see an opportunity for improvement.
