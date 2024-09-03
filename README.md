@@ -13,6 +13,14 @@ Use this to:
 npm install -g @cloud-copilot/iam-expand
 ```
 
+### AWS CloudShell Installation
+The AWS CloudShell automatically has node and npm installed, so you can install this and run it straight from the console. You'll need to use sudo to install it globally.
+
+```bash
+sudo npm install -g @cloud-copilot/iam-expand
+```
+
+## Typescript/NodeJS Usage
 ```typescript
 import { expandIamActions } from '@cloud-copilot/iam-expand';
 
@@ -206,7 +214,14 @@ yarn global add @cloud-copilot/iam-data
 yarn global add @cloud-copilot/iam-expand
 ```
 
-### Run the sciprt in a project that has the package installed
+### AWS CloudShell Installation
+The AWS CloudShell automatically has node and npm installed, so you can install this and run it straight from the console. You'll need to use sudo to install it globally.
+
+```bash
+sudo npm install -g @cloud-copilot/iam-expand
+```
+
+### Run the script in a project that has the package installed
 ```bash
 npx @cloud-copilot/iam-expand
 ```
