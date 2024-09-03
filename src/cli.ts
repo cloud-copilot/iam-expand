@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { iamDataVersion } from "@cloud-copilot/iam-data";
+import { iamDataUpdatedAt, iamDataVersion } from "@cloud-copilot/iam-data";
 import { convertOptions, parseStdIn } from "./cli_utils.js";
 import { expandIamActions, ExpandIamActionsOptions } from "./expand.js";
 
@@ -56,7 +56,10 @@ for (const arg of args) {
 async function run() {
   const options = convertOptions(optionStrings)
   if(options.showDataVersion) {
-    console.log(`@cloud-copilot/iam-data version: ${iamDataVersion()}`)
+    const version = await iamDataVersion()
+    const updatedAt = await iamDataUpdatedAt()
+    console.log(`@cloud-copilot/iam-data version: ${version}`)
+    console.log(`Data last updated: ${updatedAt}`)
     return
   }
 
