@@ -234,7 +234,7 @@ iam-expand s3:Get* s3:*Tag*
 
 You can pass in all options available through the api as dash separated flags.
 
-_Prints all matching actions for s3:Get*Tagging, s3:*Tag*, and ec2:* in alphabetical order with duplicates removed:_
+_Prints all matching actions for s3:Get\*Tagging, s3:\*Tag\*, and ec2:\* in alphabetical order with duplicates removed:_
 ```bash
 iam-expand s3:Get*Tagging s3:*Tag* ec2:* --expand-service-asterisk --distinct --sort
 ```
@@ -249,7 +249,7 @@ iam-expand
 If no actions are passed as arguments, the CLI will read from stdin.
 
 #### Expanding JSON input
-If the input is a valid json document, the CLI will find every instance of `Action` and 'NotAcion' that is a string or an array of strings and expand them. This is useful for finding all the actions in a policy document or set of documents.
+If the input is a valid json document, the CLI will find every instance of `Action` and 'NotAction' that is a string or an array of strings and expand them. This is useful for finding all the actions in a policy document or set of documents.
 
 Given `policy.json`
 ```json
