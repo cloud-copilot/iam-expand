@@ -249,8 +249,7 @@ iam-expand
 If no actions are passed as arguments, the CLI will read from stdin.
 
 #### Expanding JSON input
-If the input is a valid json document, the CLI will find every instance of `Action` that is a string
-or an array of strings and expand them. This is useful for finding all the actions in a policy document or set of documents.
+If the input is a valid json document, the CLI will find every instance of `Action` and 'NotAcion' that is a string or an array of strings and expand them. This is useful for finding all the actions in a policy document or set of documents.
 
 Given `policy.json`
 ```json
@@ -264,8 +263,8 @@ Given `policy.json`
       "Resource": "*"
     },
     {
-      "Effect": "Allow",
-      "Action": ["s3:Get*Tagging", "s3:Put*Tagging"],
+      "Effect": "Deny",
+      "NotAction": ["s3:Get*Tagging", "s3:Put*Tagging"],
       "Resource": "*"
     }
   ]
@@ -294,9 +293,9 @@ Gives this file in `expanded-policy.json`
       "Resource": "*"
     },
     {
-      "Effect": "Allow",
+      "Effect": "Deny",
       // Was ["s3:Get*Tagging", "s3:Put*Tagging"]
-      "Action": [
+      "NotAction": [
         "s3:GetBucketTagging",
         "s3:GetJobTagging",
         "s3:GetObjectTagging",
@@ -318,7 +317,7 @@ You can also use this to expand the actions from the output of commands.
 ```bash
 aws iam get-account-authorization-details --output json | iam-expand --expand-service-asterisk --read-wait-time=20_000 > expanded-inline-policies.json
 # Now you can search the output for actions you are interested in
-grep "kms:DisableKey" expanded-inline-policies.json
+grep -n "kms:DisableKey" expanded-inline-policies.json
 ```
 _--expand-service-asterisk makes sure kms:* is expaneded out so you can find the DisableKey action. --read-wait-time=20_000 gives the cli command more time to return it's first byte of output_
 

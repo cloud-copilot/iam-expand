@@ -9,7 +9,7 @@ import { expandIamActions, ExpandIamActionsOptions } from "./expand.js"
  * @returns the expanded JSON document
  */
 export async function expandJsonDocument(options: Partial<ExpandIamActionsOptions>, document: any, key?: string): Promise<any> {
-  if(key === 'Action') {
+  if(key === 'Action' || key === 'NotAction') {
     if(typeof document === 'string') {
       return await expandIamActions(document, options)
     }
