@@ -57,9 +57,9 @@ async function run() {
   const options = convertOptions(optionStrings)
   if(options.showDataVersion) {
     const version = await iamDataVersion()
-    const updatedAt = await iamDataUpdatedAt()
+    const updatedAt =
     console.log(`@cloud-copilot/iam-data version: ${version}`)
-    console.log(`Data last updated: ${updatedAt}`)
+    console.log(`Data last updated: ${await iamDataUpdatedAt()}`)
     return
   }
 
