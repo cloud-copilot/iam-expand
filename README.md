@@ -1,12 +1,14 @@
 # Expand IAM Actions
-This will expand the actions of the IAM policy to show the individual actions. Useful for when you want to see the individual actions that are included in a wildcard action or are not allowed to use wildcards for security or compliance reasons.
-
-Published in ESM and CommonJS and available as a [CLI](#cli).
+Built in the Unix philosophy, this is a small tool that does one thing well: expand IAM actions with wildcards to their list of matching actions.
 
 Use this to:
 1) Expand out wildcards in actions when you are not allowed to use wildcards in your IAM policy.
 2) Get an exhaustive list of actions that are included in a policy and quickly search it for interesting actions.
 3) Investigate where dangerous or dubious actions are being used in your policies.
+
+Published in ESM and CommonJS plus available as a [CLI](#cli).
+
+All information is sourced from the [@cloud-copilot/iam-data](https://github.com/cloud-copilot/iam-data) which is updated daily.
 
 ## Installation
 ```bash
@@ -15,9 +17,9 @@ npm install -g @cloud-copilot/iam-expand
 
 ### AWS CloudShell Installation
 The AWS CloudShell automatically has node and npm installed, so you can install this and run it straight from the console. You'll need to use sudo to install it globally.
-
 ```bash
 sudo npm install -g @cloud-copilot/iam-expand
+iam-expand
 ```
 
 ## Typescript/NodeJS Usage
@@ -202,7 +204,7 @@ expandIamActions('r2:Get*Tagging', { errorOnMissingService: true })
 ```
 
 ## CLI
-There is a CLI!
+There is a CLI! The [examples folder](examples/README.md) has examples showing how to use the CLI to find interesting actions in your IAM policies.
 
 ### Install Globally
 ```bash
@@ -234,13 +236,13 @@ iam-expand s3:Get* s3:*Tag*
 
 You can pass in all options available through the api as dash separated flags.
 
-_Prints all matching actions for s3:Get\*Tagging, s3:\*Tag\*, and ec2:\* in alphabetical order with duplicates removed:_
+_Prints all matching actions for `s3:Get*Tagging`, `s3:*Tag*`, and `ec2:*` in alphabetical order with duplicates removed:_
 ```bash
 iam-expand s3:Get*Tagging s3:*Tag* ec2:* --expand-service-asterisk --distinct --sort
 ```
 
 ### Help
-Running the command with no options shows usage help;
+Run the command with no options to show usage:
 ```bash
 iam-expand
 ```
@@ -315,7 +317,7 @@ Gives this file in `expanded-policy.json`
 
 You can also use this to expand the actions from the output of commands.
 ```bash
-aws iam get-account-authorization-details --output json | iam-expand --expand-service-asterisk --read-wait-time=20_000 > expanded-inline-policies.json
+aws iam get-account-authorization-details --output json | iam-expand --expand-service-asterisk --read-wait-time=20_000 > expanded-authorization-details.json
 # Now you can search the output for actions you are interested in
 grep -n "kms:DisableKey" expanded-inline-policies.json
 ```
