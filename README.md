@@ -60,7 +60,7 @@ expandIamActions(['s3:Get*Tagging', 's3:Put*Tagging'])
 `expandIamActions` an optional second argument that is an object with the following options:
 
 ### `expandAsterisk`
-By default, a single `*` not be expanded. We assume that if you want a list of all IAM actions there are other sources you will check, such as [@cloud-copilot/iam-data](https://github.com/cloud-copilot/iam-data). If you want to expand a single `*` you can set this option to `true`.
+By default, a single `*` will not be expanded. If you want to expand a single `*` you can set this option to `true`.
 
 ```typescript
 import { expandIamActions } from '@cloud-copilot/iam-expand';
@@ -136,7 +136,7 @@ expandIamActions(['s3:GetObject*','s3:Get*Tagging'],{distinct:true})
 ```
 
 ### `sort`
-By default, the output will be sorted based on the order of the input. If you want the output to be sorted alphabetically you can set this option to `true`.
+By default, the output will be sorted based on the order of the input. If you want the consolidated output to be sorted alphabetically you can set this option to `true`.
 
 ```typescript
 import { expandIamActions } from '@cloud-copilot/iam-expand';
@@ -203,10 +203,36 @@ expandIamActions('r2:Get*Tagging', { errorOnMissingService: true })
 //Uncaught Error: Service not found: r2
 ```
 
+## `invalidActionBehavior`
+By default, if an action is passed in that does not exist in the IAM data, it will be silently ignored and left out of the output. There are two options to override this behavior: `Error` and `Include`.
+
+```typescript
+import { expandIamActions, InvalidActionBehavior } from '@cloud-copilot/iam-expand';
+
+//Ignore invalid action by default
+expandIamActions('ec2:DestroyAvailabilityZone')
+[]
+
+//Ignore invalid action explicitly
+expandIamActions('ec2:DestroyAvailabilityZone', { invalidActionBehavior: InvalidActionBehavior.Remove })
+[]
+
+//Throw an error on invalid action
+expandIamActions('ec2:DestroyAvailabilityZone', { invalidActionBehavior: InvalidActionBehavior.Error })
+//Uncaught Error: Invalid action: ec2:DestroyAvailabilityZone
+
+//Include invalid action
+expandIamActions('ec2:DestroyAvailabilityZone', { invalidActionBehavior: InvalidActionBehavior.Include })
+['ec2:DestroyAvailabilityZone']
+```
+
 ## CLI
 There is a CLI! The [examples folder](examples/README.md) has examples showing how to use the CLI to find interesting actions in your IAM policies.
 
-### Install Globally
+### Installation
+You can install it globally and use the command `iam-expand` or add it to a single project and use `npx`.
+
+#### Install Globally
 ```bash
 npm install -g @cloud-copilot/iam-expand
 ```
@@ -216,16 +242,14 @@ yarn global add @cloud-copilot/iam-data
 yarn global add @cloud-copilot/iam-expand
 ```
 
-### AWS CloudShell Installation
 The AWS CloudShell automatically has node and npm installed, so you can install this and run it straight from the console. You'll need to use sudo to install it globally.
 
 ```bash
 sudo npm install -g @cloud-copilot/iam-expand
 ```
-
-### Run the script in a project that has the package installed
+#### Install in a project
 ```bash
-npx @cloud-copilot/iam-expand
+npm install @cloud-copilot/iam-expand
 ```
 
 ### Simple Usage
@@ -251,7 +275,7 @@ iam-expand
 If no actions are passed as arguments, the CLI will read from stdin.
 
 #### Expanding JSON input
-If the input is a valid json document, the CLI will find every instance of `Action` and 'NotAction' that is a string or an array of strings and expand them. This is useful for finding all the actions in a policy document or set of documents.
+If the input is a valid json document, the CLI will find every instance of `Action` and `NotAction` that is a string or an array of strings and expand them. This is useful for finding all the actions in a policy document or set of documents.
 
 Given `policy.json`
 ```json
@@ -321,10 +345,9 @@ aws iam get-account-authorization-details --output json | iam-expand --expand-se
 # Now you can search the output for actions you are interested in
 grep -n "kms:DisableKey" expanded-inline-policies.json
 ```
-_--expand-service-asterisk makes sure kms:* is expaneded out so you can find the DisableKey action. --read-wait-time=20_000 gives the cli command more time to return it's first byte of output_
 
 #### Expanding arbitrary input
-If the input from stdin is not json, the content is searched for actions that are then expanded. This is really meant to be abused. It essentialy greps the content for anything resembling and action and expands it. Throw anything at it and it will find all the actions it can and expand them.
+If the input from stdin is not json, the content is searched for IAM actions then expands them. Throw anything at it and it will find all the actions it can and expand them.
 
 You can echo some content:
 ```bash
@@ -348,7 +371,7 @@ cat template.yaml | iam-expand
 
 Or even some HTML:
 ```bash
-curl "https://docs.aws.amazon.com/aws-managed-policy/latest/reference/SecurityAudit.html" | iam-expand
+curl "https://docs.aws.amazon.com/aws-managed-policy/latest/reference/ReadOnlyAccess.html" | iam-expand
 ```
 
 Or the output of any command.
