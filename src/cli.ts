@@ -5,6 +5,7 @@ import { convertOptions, parseStdIn } from "./cli_utils.js";
 import { expandIamActions, ExpandIamActionsOptions } from "./expand.js";
 
 const commandName = 'iam-expand'
+const dataPackage = '@cloud-copilot/iam-data'
 
 async function expandAndPrint(actionStrings: string[], options: Partial<ExpandIamActionsOptions>) {
   try {
@@ -36,7 +37,7 @@ function printUsage() {
   console.log('    --invalid-action-behavior=error: Throw an error if an invalid action is encountered')
   console.log('CLI Behavior Options:')
   console.log('  --show-data-version: Print the version of the iam-data package being used and exit')
-  console.log('  --read-wait-time: Millisenconds to wait for input from stdin before timing out.')
+  console.log('  --read-wait-time: Millisenconds to wait for the first byte from stdin before timing out.')
   console.log('                    Example: --read-wait-time=10_000')
   process.exit(1)
 }
@@ -58,8 +59,11 @@ async function run() {
   if(options.showDataVersion) {
     const version = await iamDataVersion()
     const updatedAt =
-    console.log(`@cloud-copilot/iam-data version: ${version}`)
+    console.log(`${dataPackage} version: ${version}`)
     console.log(`Data last updated: ${await iamDataUpdatedAt()}`)
+    console.log(`Update with either:`)
+    console.log(`  npm update ${dataPackage}`)
+    console.log(`  npm update -g ${dataPackage}`)
     return
   }
 
