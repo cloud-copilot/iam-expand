@@ -211,11 +211,11 @@ describe("expand", () => {
   })
 
   describe("when the service in the action string does not exist", () => {
-    it("should return an empty array when errorOnMissingService is false", async () => {
+    it("should return an empty array when errorOnInvalidService is false", async () => {
       //Given actionString contains a service that does not exist
       const actionString = 'fake:GetObject*'
       //And errorOnMissingService is false
-      const options = { errorOnMissingService: false }
+      const options = { errorOnInvalidService: false }
 
       //When expand is called with actionString
       const result = await expandIamActions(actionString, options)
@@ -224,11 +224,11 @@ describe("expand", () => {
       expect(result).toEqual([])
     })
 
-    it("should throw an error when errorOnMissingService is true", async () => {
+    it("should throw an error when errorOnInvalidService is true", async () => {
       //Given actionString contains a service that does not exist
       const actionString = 'fake:GetObject*'
       //And errorOnMissingService is true
-      const options = { errorOnMissingService: true }
+      const options = { errorOnInvalidService: true }
 
       //When expand is called with actionString
       //Then an error should be thrown

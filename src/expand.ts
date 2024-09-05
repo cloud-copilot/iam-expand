@@ -37,7 +37,7 @@ export interface ExpandIamActionsOptions {
    * If false, an empty array will be returned
    * Default: false
    */
-  errorOnMissingService: boolean
+  errorOnInvalidService: boolean
 
   /**
    * The behavior to use when an invalid action is encountered without wildcards
@@ -54,7 +54,7 @@ const defaultOptions: ExpandIamActionsOptions = {
   expandAsterisk: false,
   expandServiceAsterisk: false,
   errorOnInvalidFormat: false,
-  errorOnMissingService: false,
+  errorOnInvalidService: false,
   invalidActionBehavior: InvalidActionBehavior.Remove,
 }
 
@@ -123,7 +123,7 @@ export async function expandIamActions(actionStringOrStrings: string | string[],
 
   const [service, wildcardActions] = parts.map(part => part.toLowerCase())
   if(!await iamServiceExists(service)) {
-    if(options.errorOnMissingService) {
+    if(options.errorOnInvalidService) {
       throw new Error(`Service not found: ${service}`)
     }
     return []
