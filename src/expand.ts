@@ -40,14 +40,6 @@ export interface ExpandIamActionsOptions {
   errorOnMissingService: boolean
 
   /**
-   * If true, only unique values will be returned, while maintaining order
-   * If false, all values will be returned, even if they are duplicates
-   * Default: false
-   */
-  distinct: boolean
-
-
-  /**
    * The behavior to use when an invalid action is encountered without wildcards
    * @{InvalidActionBehavior.Remove} will remove the invalid action from the output
    * @{InvalidActionBehavior.Error} will throw an error if an invalid action is encountered
@@ -56,13 +48,6 @@ export interface ExpandIamActionsOptions {
    * Default: InvalidActionBehavior.Remove
    */
   invalidActionBehavior: InvalidActionBehavior
-
-  /**
-   * If true, the returned array will be sorted
-   * If false, the returned array will be in the order they were expanded
-   * Default: false
-   */
-  sort: boolean
 }
 
 const defaultOptions: ExpandIamActionsOptions = {
@@ -71,8 +56,6 @@ const defaultOptions: ExpandIamActionsOptions = {
   errorOnInvalidFormat: false,
   errorOnMissingService: false,
   invalidActionBehavior: InvalidActionBehavior.Remove,
-  distinct: false,
-  sort: false
 }
 
 const allAsterisksPattern = /^\*+$/i
@@ -101,21 +84,9 @@ export async function expandIamActions(actionStringOrStrings: string | string[],
       return expandIamActions(actionString, options);
     }))
 
-    let allMatches = actionLists.flat()
+    const allMatches = Array.from(new Set(actionLists.flat()))
+    allMatches.sort()
 
-    if(options.distinct) {
-      const aSet = new Set<string>()
-      allMatches = allMatches.filter((value) => {
-        if(aSet.has(value)) {
-          return false
-        }
-        aSet.add(value)
-        return true
-      })
-    }
-    if(options.sort) {
-      allMatches.sort()
-    }
     return allMatches
   }
 
@@ -189,9 +160,7 @@ export async function expandIamActions(actionStringOrStrings: string | string[],
   const pattern = "^" + wildcardActions.replace(/\*/g, '.*?') + "$"
   const regex = new RegExp(pattern, 'i')
   const matchingActions = allActions.filter(action => regex.test(action)).map(action => `${service}:${action}`)
-  if(options.sort) {
-    matchingActions.sort()
-  }
+  matchingActions.sort()
 
   return matchingActions
 }

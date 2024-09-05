@@ -22,210 +22,6 @@ sudo npm install -g @cloud-copilot/iam-expand
 iam-expand
 ```
 
-## Typescript/NodeJS Usage
-```typescript
-import { expandIamActions } from '@cloud-copilot/iam-expand';
-
-expandIamActions('s3:Get*Tagging')
-[
-  's3:GetBucketTagging',
-  's3:GetJobTagging',
-  's3:GetObjectTagging',
-  's3:GetObjectVersionTagging',
-  's3:GetStorageLensConfigurationTagging'
-]
-
-expandIamActions(['s3:Get*Tagging', 's3:Put*Tagging'])
-[
-  's3:GetBucketTagging',
-  's3:GetJobTagging',
-  's3:GetObjectTagging',
-  's3:GetObjectVersionTagging',
-  's3:GetStorageLensConfigurationTagging',
-  's3:PutBucketTagging',
-  's3:PutJobTagging',
-  's3:PutObjectTagging',
-  's3:PutObjectVersionTagging',
-  's3:PutStorageLensConfigurationTagging'
-]
-```
-
-## API
-`expandIamActions(actionStringOrStrings: string | string[], overrideOptions?: Partial<ExpandIamActionsOptions>)` is the main function that will expand the actions of the IAM policy. Takes a string or array of strings and returns an array of strings that the input matches.
-
-## Only Valid Values
-`expandIamActions` intends to only return valid actual actions, if any invalid values are passed in such as an invalid format or a service/action that does not exist, they will be left out of the output. There are options to override this behavior.
-
-## Options
-`expandIamActions` an optional second argument that is an object with the following options:
-
-### `expandAsterisk`
-By default, a single `*` will not be expanded. If you want to expand a single `*` you can set this option to `true`.
-
-```typescript
-import { expandIamActions } from '@cloud-copilot/iam-expand';
-
-//Returns the unexpanded value
-expandIamActions('*')
-['*']
-
-//Returns the expanded value
-expandIamActions('*', { expandAsterisk: true })
-[
-  //Many many strings. 🫢
-]
-```
-### `expandServiceAsterisk`
-By default, a service name followed by a `*` (such as `s3:*` or `lambda:*`) will not be expanded. If you want to expand these you can set this option to `true`.
-
-```typescript
-import { expandIamActions } from '@cloud-copilot/iam-expand';
-
-//Returns the unexpanded value
-expandIamActions('s3:*')
-['s3:*']
-
-//Returns the expanded value
-expandIamActions('s3:*', { expandServiceAsterisk: true })
-[
-  //All the s3 actions. 🫢
-]
-```
-
-### `distinct`
-If you include multiple patterns that have overlapping matching actions, the same action will be included multiple times in the output. If you want to remove duplicates you can set this option to `true`.
-
-```typescript
-import { expandIamActions } from '@cloud-copilot/iam-expand';
-
-//Returns duplication values (s3:GetObjectTagging)
-expandIamActions(['s3:GetObject*','s3:Get*Tagging'])
-[
-  's3:GetObject',
-  's3:GetObjectAcl',
-  's3:GetObjectAttributes',
-  's3:GetObjectLegalHold',
-  's3:GetObjectRetention',
-  's3:GetObjectTagging',
-  ...
-  's3:GetObjectTagging',
-  's3:GetObjectVersionTagging',
-  's3:GetStorageLensConfigurationTagging'
-]
-
-//Duplicates removed and order maintained
-expandIamActions(['s3:GetObject*','s3:Get*Tagging'],{distinct:true})
-[
-  's3:GetObject',
-  's3:GetObjectAcl',
-  's3:GetObjectAttributes',
-  's3:GetObjectLegalHold',
-  's3:GetObjectRetention',
-  's3:GetObjectTagging',
-  's3:GetObjectTorrent',
-  's3:GetObjectVersion',
-  's3:GetObjectVersionAcl',
-  's3:GetObjectVersionAttributes',
-  's3:GetObjectVersionForReplication',
-  's3:GetObjectVersionTagging',
-  's3:GetObjectVersionTorrent',
-  's3:GetBucketTagging',
-  's3:GetJobTagging',
-  's3:GetStorageLensConfigurationTagging'
-]
-```
-
-### `sort`
-By default, the output will be sorted based on the order of the input. If you want the consolidated output to be sorted alphabetically you can set this option to `true`.
-
-```typescript
-import { expandIamActions } from '@cloud-copilot/iam-expand';
-
-//By default the output is sorted based on the order of the input
-expandIamActions(['s3:Get*Tagging','ec2:*Tags'])
-[
-  's3:GetBucketTagging',
-  's3:GetJobTagging',
-  's3:GetObjectTagging',
-  's3:GetObjectVersionTagging',
-  's3:GetStorageLensConfigurationTagging',
-  'ec2:CreateTags',
-  'ec2:DeleteTags',
-  'ec2:DescribeTags'
-]
-
-//Output is sorted alphabetically
-expandIamActions(['s3:Get*Tagging','ec2:*Tags'], {sort: true})
-[
-  'ec2:CreateTags',
-  'ec2:DeleteTags',
-  'ec2:DescribeTags',
-  's3:GetBucketTagging',
-  's3:GetJobTagging',
-  's3:GetObjectTagging',
-  's3:GetObjectVersionTagging',
-  's3:GetStorageLensConfigurationTagging'
-]
-
-```
-
-### `errorOnInvalidFormat`
-By default, if an invalid format is passed in, such as:
-*  `s3Get*Tagging` (missing a separator) or
-*  `s3:Get:Tagging*` (too many separators)
-
-it will be silenty ignored and left out of the output. If you want to throw an error when an invalid format is passed in you can set this option to `true`.
-
-```typescript
-import { expandIamActions } from '@cloud-copilot/iam-expand';
-
-//Ignore invalid format
-expandIamActions('s3Get*Tagging')
-[]
-
-//Throw an error on invalid format
-expandIamActions('s3Get*Tagging', { errorOnInvalidFormat: true })
-//Uncaught Error: Invalid action format: s3Get*Tagging
-```
-
-### `errorOnMissingService`
-By default, if a service is passed in that does not exist in the IAM data, it will be silently ignored and left out of the output. If you want to throw an error when a service is passed in that does not exist you can set this option to `true`.
-
-```typescript
-import { expandIamActions } from '@cloud-copilot/iam-expand';
-
-//Ignore missing service
-expandIamActions('r2:Get*Tagging')
-[]
-
-//Throw an error on missing service
-expandIamActions('r2:Get*Tagging', { errorOnMissingService: true })
-//Uncaught Error: Service not found: r2
-```
-
-## `invalidActionBehavior`
-By default, if an action is passed in that does not exist in the IAM data, it will be silently ignored and left out of the output. There are two options to override this behavior: `Error` and `Include`.
-
-```typescript
-import { expandIamActions, InvalidActionBehavior } from '@cloud-copilot/iam-expand';
-
-//Ignore invalid action by default
-expandIamActions('ec2:DestroyAvailabilityZone')
-[]
-
-//Ignore invalid action explicitly
-expandIamActions('ec2:DestroyAvailabilityZone', { invalidActionBehavior: InvalidActionBehavior.Remove })
-[]
-
-//Throw an error on invalid action
-expandIamActions('ec2:DestroyAvailabilityZone', { invalidActionBehavior: InvalidActionBehavior.Error })
-//Uncaught Error: Invalid action: ec2:DestroyAvailabilityZone
-
-//Include invalid action
-expandIamActions('ec2:DestroyAvailabilityZone', { invalidActionBehavior: InvalidActionBehavior.Include })
-['ec2:DestroyAvailabilityZone']
-```
-
 ## CLI
 There is a CLI! The [examples folder](examples/README.md) has examples showing how to use the CLI to find interesting actions in your IAM policies.
 
@@ -262,7 +58,7 @@ You can pass in all options available through the api as dash separated flags.
 
 _Prints all matching actions for `s3:Get*Tagging`, `s3:*Tag*`, and `ec2:*` in alphabetical order with duplicates removed:_
 ```bash
-iam-expand s3:Get*Tagging s3:*Tag* ec2:* --expand-service-asterisk --distinct --sort
+iam-expand s3:Get*Tagging s3:*Tag* ec2:* --expand-service-asterisk
 ```
 
 ### Help
@@ -379,3 +175,134 @@ Or the output of any command.
 Because of the likelyhood of finding an aseterik `*` in the input; if the value to stdin is not a valid json document the stdin option will not find or expand a single `*` even if `--expand-asterisk` is passed.
 
 Please give this anything you can think of and open an issue if you see an opportunity for improvement.
+
+
+
+## Typescript/NodeJS Usage
+```typescript
+import { expandIamActions } from '@cloud-copilot/iam-expand';
+
+expandIamActions('s3:Get*Tagging')
+[
+  's3:GetBucketTagging',
+  's3:GetJobTagging',
+  's3:GetObjectTagging',
+  's3:GetObjectVersionTagging',
+  's3:GetStorageLensConfigurationTagging'
+]
+
+expandIamActions(['s3:Get*Tagging', 's3:Put*Tagging'])
+[
+  's3:GetBucketTagging',
+  's3:GetJobTagging',
+  's3:GetObjectTagging',
+  's3:GetObjectVersionTagging',
+  's3:GetStorageLensConfigurationTagging',
+  's3:PutBucketTagging',
+  's3:PutJobTagging',
+  's3:PutObjectTagging',
+  's3:PutObjectVersionTagging',
+  's3:PutStorageLensConfigurationTagging'
+]
+```
+
+## API
+`expandIamActions(actionStringOrStrings: string | string[], overrideOptions?: Partial<ExpandIamActionsOptions>)` is the main function that will expand the actions of the IAM policy. Takes a string or array of strings and returns an array of strings that the input matches.
+
+## Only Valid Values
+`expandIamActions` intends to only return valid actual actions, if any invalid values are passed in such as an invalid format or a service/action that does not exist, they will be left out of the output. There are options to override this behavior.
+
+## Options
+`expandIamActions` an optional second argument that is an object with the following options:
+
+### `expandAsterisk`
+By default, a single `*` will not be expanded. If you want to expand a single `*` you can set this option to `true`.
+
+```typescript
+import { expandIamActions } from '@cloud-copilot/iam-expand';
+
+//Returns the unexpanded value
+expandIamActions('*')
+['*']
+
+//Returns the expanded value
+expandIamActions('*', { expandAsterisk: true })
+[
+  //Many many strings. 🫢
+]
+```
+### `expandServiceAsterisk`
+By default, a service name followed by a `*` (such as `s3:*` or `lambda:*`) will not be expanded. If you want to expand these you can set this option to `true`.
+
+```typescript
+import { expandIamActions } from '@cloud-copilot/iam-expand';
+
+//Returns the unexpanded value
+expandIamActions('s3:*')
+['s3:*']
+
+//Returns the expanded value
+expandIamActions('s3:*', { expandServiceAsterisk: true })
+[
+  //All the s3 actions. 🫢
+]
+```
+
+### `errorOnInvalidFormat`
+By default, if an invalid format is passed in, such as:
+*  `s3Get*Tagging` (missing a separator) or
+*  `s3:Get:Tagging*` (too many separators)
+
+it will be silenty ignored and left out of the output. If you want to throw an error when an invalid format is passed in you can set this option to `true`.
+
+```typescript
+import { expandIamActions } from '@cloud-copilot/iam-expand';
+
+//Ignore invalid format
+expandIamActions('s3Get*Tagging')
+[]
+
+//Throw an error on invalid format
+expandIamActions('s3Get*Tagging', { errorOnInvalidFormat: true })
+//Uncaught Error: Invalid action format: s3Get*Tagging
+```
+
+### `errorOnMissingService`
+By default, if a service is passed in that does not exist in the IAM data, it will be silently ignored and left out of the output. If you want to throw an error when a service is passed in that does not exist you can set this option to `true`.
+
+```typescript
+import { expandIamActions } from '@cloud-copilot/iam-expand';
+
+//Ignore missing service
+expandIamActions('r2:Get*Tagging')
+[]
+
+//Throw an error on missing service
+expandIamActions('r2:Get*Tagging', { errorOnMissingService: true })
+//Uncaught Error: Service not found: r2
+```
+
+## `invalidActionBehavior`
+By default, if an action is passed in that does not exist in the IAM data, it will be silently ignored and left out of the output. There are two options to override this behavior: `Error` and `Include`.
+
+```typescript
+import { expandIamActions, InvalidActionBehavior } from '@cloud-copilot/iam-expand';
+
+//Ignore invalid action by default
+expandIamActions('ec2:DestroyAvailabilityZone')
+[]
+
+//Ignore invalid action explicitly
+expandIamActions('ec2:DestroyAvailabilityZone', { invalidActionBehavior: InvalidActionBehavior.Remove })
+[]
+
+//Throw an error on invalid action
+expandIamActions('ec2:DestroyAvailabilityZone', { invalidActionBehavior: InvalidActionBehavior.Error })
+//Uncaught Error: Invalid action: ec2:DestroyAvailabilityZone
+
+//Include invalid action
+expandIamActions('ec2:DestroyAvailabilityZone', { invalidActionBehavior: InvalidActionBehavior.Include })
+['ec2:DestroyAvailabilityZone']
+```
+
+

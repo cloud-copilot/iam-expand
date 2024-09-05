@@ -327,7 +327,7 @@ describe("expand", () => {
       //Given actionString is 's3:*Object'
       const actionString = 's3:*Object'
       //And s3 service exists
-      vi.mocked(iamServiceExists).mockReturnValue(true)
+      vi.mocked(iamServiceExists).mockResolvedValue(true)
       //And there are matching actions
       vi.mocked(iamActionsForService).mockResolvedValue([
         'GetObject',
@@ -369,8 +369,8 @@ describe("expand", () => {
       const result = await expandIamActions(actionString)
       //Then result should be an array of actions
       expect(result).toEqual([
-        's3:GetObjectTagging',
-        's3:GetBanskyTagging'
+        's3:GetBanskyTagging',
+        's3:GetObjectTagging'
       ])
     })
 
@@ -397,10 +397,10 @@ describe("expand", () => {
       const result = await expandIamActions(actionString)
       //Then result should be an array of actions
       expect(result).toEqual([
-        's3:GetObjectTagging',
         's3:GetBanskyTagging',
-        's3:GetTagging',
-        's3:GetSomethingTaggingSomething'
+        's3:GetObjectTagging',
+        's3:GetSomethingTaggingSomething',
+        's3:GetTagging'
       ])
     })
   })
@@ -449,81 +449,41 @@ describe("expand", () => {
     })
   })
 
-  describe("distinct option", () => {
-    it('should return all values when distinct is false', async () => {
-      //Given two action strings
-      const actionString = ['s3:Get*','s3:*Object']
-      //And s3 service exists
-      vi.mocked(iamServiceExists).mockResolvedValue(true)
-      //And there are matching actions
-      vi.mocked(iamActionsForService).mockResolvedValue(['GetObject', 'PutObject', 'GetOtherObject'])
+  it('should return only unique values', async () => {
+    //Given two action strings
+    const actionString = ['s3:Get*','s3:*Object']
+    //And s3 service exists
+    vi.mocked(iamServiceExists).mockResolvedValue(true)
+    //And there are matching actions
+    vi.mocked(iamActionsForService).mockResolvedValue(['GetObject', 'PutObject', 'GetOtherObject'])
 
-      //When expand is called with actionString and distinct is false
-      const result = await expandIamActions(actionString, { distinct: false })
-
-      //Then result should be an array of actions, even if they are duplicates
-      expect(result).toEqual(['s3:GetObject', 's3:GetOtherObject', 's3:GetObject', 's3:PutObject', 's3:GetOtherObject'])
-    })
-
-    it('should return only unique values when distinct is true, and maintain order', async () => {
-      //Given two action strings
-      const actionString = ['s3:Get*','s3:*Object']
-      //And s3 service exists
-      vi.mocked(iamServiceExists).mockResolvedValue(true)
-      //And there are matching actions
-      vi.mocked(iamActionsForService).mockResolvedValue(['GetObject', 'PutObject', 'GetOtherObject'])
-
-      //When expand is called with actionStrings and distinct is true
-      const result = await expandIamActions(actionString, { distinct: true })
-      //Then result should be an array of unique actions
-      expect(result).toEqual(['s3:GetObject', 's3:GetOtherObject', 's3:PutObject'])
-    })
+    //When expand is called with actionStrings and distinct is true
+    const result = await expandIamActions(actionString, )
+    //Then result should be an array of unique actions
+    expect(result).toEqual(['s3:GetObject', 's3:GetOtherObject', 's3:PutObject'])
   })
 
-  describe("sort option", () => {
-    it('should return values in the order they were expanded when sort is false', async () => {
-      //Given two action strings
-      const actionString = ['s3:Get*','ec2:Describe*']
-      //And s3 service exists
-      vi.mocked(iamServiceExists).mockResolvedValue(true)
-      //And there are matching actions
-      vi.mocked(iamActionsForService).mockImplementation(async (service) => {
-        if(service === 's3') {
-          return ['GetObject', 'GetBucket']
-        }
-        if(service === 'ec2') {
-          return ['DescribeInstances', 'DescribeVolumes']
-        }
-        return []
-      })
-
-      //When expand is called with actionStrings and sort is false
-      const result = await expandIamActions(actionString, { sort: false })
-      //Then result should be an array of actions in the order they were expanded
-      expect(result).toEqual(['s3:GetObject', 's3:GetBucket', 'ec2:DescribeInstances', 'ec2:DescribeVolumes'])
+  it('should return values sorted', async () => {
+    //Given two action strings
+    const actionString = ['s3:Get*','ec2:Describe*']
+    //And s3 service exists
+    vi.mocked(iamServiceExists).mockResolvedValue(true)
+    //And there are matching actions
+    vi.mocked(iamActionsForService).mockImplementation(async (service) => {
+      if(service === 's3') {
+        return ['GetObject', 'GetBucket']
+      }
+      if(service === 'ec2') {
+        return ['DescribeInstances', 'DescribeVolumes']
+      }
+      return []
     })
 
-    it('should return values sorted when sort is true', async () => {
-      //Given two action strings
-      const actionString = ['s3:Get*','ec2:Describe*']
-      //And s3 service exists
-      vi.mocked(iamServiceExists).mockResolvedValue(true)
-      //And there are matching actions
-      vi.mocked(iamActionsForService).mockImplementation(async (service) => {
-        if(service === 's3') {
-          return ['GetObject', 'GetBucket']
-        }
-        if(service === 'ec2') {
-          return ['DescribeInstances', 'DescribeVolumes']
-        }
-        return []
-      })
+    //When expand is called with actionStrings
+    const result = await expandIamActions(actionString)
 
-      //When expand is called with actionStrings and sort is false
-      const result = await expandIamActions(actionString, { sort: true })
-      //Then result should be an array of actions in the order they were expanded
-      expect(result).toEqual(['ec2:DescribeInstances', 'ec2:DescribeVolumes', 's3:GetBucket', 's3:GetObject'])
-    })
+    //Then result should be an array of sorted actions
+    expect(result).toEqual(['ec2:DescribeInstances', 'ec2:DescribeVolumes', 's3:GetBucket', 's3:GetObject'])
   })
 
 })

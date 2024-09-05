@@ -25,8 +25,6 @@ function printUsage() {
   console.log(`  ${commandName} [options] [action1] [action2] ...`)
   console.log(`  <input from stdout> | ${commandName} [options]`)
   console.log('Action Expanding Options:')
-  console.log('  --distinct: Remove duplicate actions')
-  console.log('  --sort: Sort the actions')
   console.log('  --expand-asterisk: Expand the * action to all actions')
   console.log('  --expand-service-asterisk: Expand service:* to all actions for that service')
   console.log('  --error-on-missing-service: Throw an error if a service is not found')
