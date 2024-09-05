@@ -55,7 +55,6 @@ describe('expand_file', () => {
         }
       }
       vi.mocked(expandIamActions).mockImplementation(async (actions, options) =>{
-        expect(options?.distinct).toBe(true)
         return ["s3:GetObject", "s3:GetBucket", "s3:PutObject", "s3:PutBucket"]
       })
 
@@ -134,7 +133,6 @@ describe('expand_file', () => {
         }
       }
       vi.mocked(expandIamActions).mockImplementation(async (actions, options) =>{
-        expect(options?.distinct).toBe(true)
         return ["s3:GetObject", "s3:GetBucket", "s3:PutObject", "s3:PutBucket"]
       })
 

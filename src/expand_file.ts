@@ -14,7 +14,7 @@ export async function expandJsonDocument(options: Partial<ExpandIamActionsOption
       return await expandIamActions(document, options)
     }
     if(Array.isArray(document) && document.length > 0 && typeof document[0] === 'string') {
-      const value =  await expandIamActions(document, {...options, distinct: true})
+      const value =  await expandIamActions(document, {...options})
       return value
     }
   }

@@ -458,7 +458,7 @@ describe("expand", () => {
     vi.mocked(iamActionsForService).mockResolvedValue(['GetObject', 'PutObject', 'GetOtherObject'])
 
     //When expand is called with actionStrings and distinct is true
-    const result = await expandIamActions(actionString, )
+    const result = await expandIamActions(actionString)
     //Then result should be an array of unique actions
     expect(result).toEqual(['s3:GetObject', 's3:GetOtherObject', 's3:PutObject'])
   })
