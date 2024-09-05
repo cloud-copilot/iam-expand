@@ -2,69 +2,164 @@
 Built in the Unix philosophy, this is a small tool that does one thing well: expand IAM actions with wildcards to their list of matching actions.
 
 Use this to:
-1) Expand out wildcards in actions when you are not allowed to use wildcards in your IAM policy.
-2) Get an exhaustive list of actions that are included in a policy and quickly search it for interesting actions.
-3) Investigate where dangerous or dubious actions are being used in your policies.
+1) Expand wildcards when you are not allowed to use them in your policies.
+2) Get an exhaustive list of actions that are included in a policy to quickly search it for interesting actions.
+3) Investigate where interesting or dubious actions are being used in your policies.
 
-Published in ESM and CommonJS plus available as a [CLI](#cli).
+Published as an [npm package](#typescriptnodejs-usage) in ESM and CommonJS plus available as a [CLI](#cli).
 
-All information is sourced from the [@cloud-copilot/iam-data](https://github.com/cloud-copilot/iam-data) which is updated daily.
+All information is sourced from [@cloud-copilot/iam-data](https://github.com/cloud-copilot/iam-data) which is updated daily.
 
-## Installation
-```bash
-npm install -g @cloud-copilot/iam-expand
-```
-
-### AWS CloudShell Installation
-The AWS CloudShell automatically has node and npm installed, so you can install this and run it straight from the console. You'll need to use sudo to install it globally.
-```bash
-sudo npm install -g @cloud-copilot/iam-expand
-iam-expand
-```
+## Only Valid Values
+`iam-expand` intends to only return valid, actual actions, if any invalid values are passed in such as an invalid format or a service/action that does not exist, they will be left out of the output. There are options to override this behavior.
 
 ## CLI
 There is a CLI! The [examples folder](examples/README.md) has examples showing how to use the CLI to find interesting actions in your IAM policies.
 
-### Installation
-You can install it globally and use the command `iam-expand` or add it to a single project and use `npx`.
-
-#### Install Globally
+### Global CLI Installation
+You can install it globally. This also works in the default AWS CloudShell!
 ```bash
 npm install -g @cloud-copilot/iam-expand
 ```
-yarn (yarn does not automatically add peer dependencies, so need to add the data package explicitly)
-```
-yarn global add @cloud-copilot/iam-data
-yarn global add @cloud-copilot/iam-expand
-```
+*Depending on your configuration sudo may be required to install globally.*
 
-The AWS CloudShell automatically has node and npm installed, so you can install this and run it straight from the console. You'll need to use sudo to install it globally.
-
-```bash
-sudo npm install -g @cloud-copilot/iam-expand
-```
-#### Install in a project
+### Install CLI In a Project
+You can also install the CLI in a project and run it with `npx`.
 ```bash
 npm install @cloud-copilot/iam-expand
+# Run with npx inside your project
+npx @cloud-copilot/iam-expand
 ```
 
-### Simple Usage
+### Expand Actions
 The simplest usage is to pass in the actions you want to expand.
 ```bash
-iam-expand s3:Get* s3:*Tag*
+iam-expand s3:Get*Tagging
+# Outputs all Get*Tagging actions
+s3:GetBucketTagging
+s3:GetJobTagging
+s3:GetObjectTagging
+s3:GetObjectVersionTagging
+s3:GetStorageLensConfigurationTaggin
 ```
 
-You can pass in all options available through the api as dash separated flags.
-
-_Prints all matching actions for `s3:Get*Tagging`, `s3:*Tag*`, and `ec2:*` in alphabetical order with duplicates removed:_
 ```bash
-iam-expand s3:Get*Tagging s3:*Tag* ec2:* --expand-service-asterisk
+iam-expand s3:Get*Tagging s3:Put*Tagging
+# Outputs the combination of Get*Tagging and Put*Tagging actions deduplicated and sorted
+s3:GetBucketTagging
+s3:GetJobTagging
+s3:GetObjectTagging
+s3:GetObjectVersionTagging
+s3:GetStorageLensConfigurationTagging
+s3:PutBucketTagging
+s3:PutJobTagging
+s3:PutObjectTagging
+s3:PutObjectVersionTagging
+s3:PutStorageLensConfigurationTaggin
 ```
 
 ### Help
 Run the command with no options to show usage:
 ```bash
 iam-expand
+```
+
+### Options
+
+#### `--expand-asterisk`
+By default, a single `*` will not be expanded. If you want to expand a single `*` you can set this flag.
+```bash
+iam-expand "*"
+# Returns the asterisk
+*
+
+iam-expand --expand-asterisk "*"
+# Returns very many strings, very very fast. 📚 🚀
+```
+
+#### `--expand-service-asterisk`
+By default, a service name followed by a `*` (such as `s3:*` or `lambda:*`) will not be expanded. If you want to expand these you can set this flag.
+```bash
+iam-expand "s3:*"
+# Returns the service:* action
+s3:*
+
+iam-expand --expand-service-asterisk "s3:*"
+# Returns all the s3 actions in order. 🪣
+s3:AbortMultipartUpload
+s3:AssociateAccessGrantsIdentityCenter
+s3:BypassGovernanceRetention
+...
+```
+
+#### `--error-on-invalid-format`
+By default, if an invalid format is passed in, such as:
+*  `s3Get*Tagging` (missing a separator) or
+*  `s3:Get:Tagging*` (too many separators)
+
+it will be silenty ignored and left out of the output. If you want to throw an error when an invalid format is passed in you can set this flag.
+
+```bash
+iam-expand "s3Get*Tagging"
+# Returns nothing
+
+iam-expand --error-on-invalid-format "s3Get*Tagging"
+# Throws an error and returns a non zero exit code
+# Error: Invalid action format: s3Get*Tagging
+```
+
+#### `--error-on-invalid-service`
+By default, if a service is passed in that does not exist in the IAM data, it will be silently ignored and left out of the output. If you want to throw an error when a service is passed in that does not exist you can set this flag.
+
+```bash
+iam-expand "r2:Get*Tagging"
+# Returns nothing
+
+iam-expand --error-on-invalid-service "r2:Get*Tagging"
+# Throws an error and returns a non zero exit code
+# Error: Service not found: r2
+```
+
+#### `--invalid-action-behavior`
+By default, if an action is passed in that does not exist in the IAM data, it will be silently ignored and left out of the output. There are two options to override this behavior: `error` and `include`.
+
+```bash
+iam-expand "ec2:DestroyAvailabilityZone"
+# Returns nothing
+
+iam-expand --invalid-action-behavior=remove "ec2:DestroyAvailabilityZone"
+# Returns nothing
+
+iam-expand --invalid-action-behavior=error "ec2:DestroyAvailabilityZone"
+# Throws an error and returns a non zero exit code
+# Error: Invalid action: ec2:DestroyAvailabilityZone
+
+iam-expand --invalid-action-behavior=include "ec2:DestroyAvailabilityZone"
+# Returns the invalid action
+ec2:DestroyAvailabilityZone
+```
+
+#### `--show-data-version`
+Show the version of the data that is being used to expand the actions and exit.
+
+```bash
+iam-expand --show-data-version
+@cloud-copilot/iam-data version: 0.3.202409051
+Data last updated: Thu Sep 05 2024 04:46:39 GMT+0000 (Coordinated Universal Time)
+Update with either:
+  npm update @cloud-copilot/iam-data
+  npm update -g @cloud-copilot/iam-data
+```
+
+#### `--read-wait-time`
+When reading from stdin (see [below](#read-from-stdin)) the CLI will wait 10 seconds for the first byte to be read before timing out. This is enough time for most operations. If you want to wait longer you can set this flag to the number of milliseconds you want to wait.
+
+```bash
+cat policy.json | iam-expand
+# Will wait for 10 seconds for input, which is plenty of time for a local file.
+
+curl "https://governmentsecrets.s3.amazonaws.com/bigfile.json" | iam-expand --read-wait-time=20_000
+# Will wait for 20 seconds for the first byte from curl before timing out. Adjust as needed
 ```
 
 ### Read from stdin
@@ -145,7 +240,7 @@ grep -n "kms:DisableKey" expanded-inline-policies.json
 #### Expanding arbitrary input
 If the input from stdin is not json, the content is searched for IAM actions then expands them. Throw anything at it and it will find all the actions it can and expand them.
 
-You can echo some content:
+You can echo content:
 ```bash
 echo "s3:Get*Tagging" | iam-expand
 ```
@@ -176,9 +271,13 @@ Because of the likelyhood of finding an aseterik `*` in the input; if the value 
 
 Please give this anything you can think of and open an issue if you see an opportunity for improvement.
 
-
-
 ## Typescript/NodeJS Usage
+
+## Add to a project
+```bash
+npm install @cloud-copilot/iam-expand
+```
+
 ```typescript
 import { expandIamActions } from '@cloud-copilot/iam-expand';
 
@@ -267,18 +366,18 @@ expandIamActions('s3Get*Tagging', { errorOnInvalidFormat: true })
 //Uncaught Error: Invalid action format: s3Get*Tagging
 ```
 
-### `errorOnMissingService`
+### `errorOnInvalidService`
 By default, if a service is passed in that does not exist in the IAM data, it will be silently ignored and left out of the output. If you want to throw an error when a service is passed in that does not exist you can set this option to `true`.
 
 ```typescript
 import { expandIamActions } from '@cloud-copilot/iam-expand';
 
-//Ignore missing service
+//Ignore invalid service
 expandIamActions('r2:Get*Tagging')
 []
 
-//Throw an error on missing service
-expandIamActions('r2:Get*Tagging', { errorOnMissingService: true })
+//Throw an error on invalid service
+expandIamActions('r2:Get*Tagging', { errorOnInvalidService: true })
 //Uncaught Error: Service not found: r2
 ```
 
