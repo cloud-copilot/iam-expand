@@ -105,7 +105,7 @@ iam-expand "s3Get*Tagging"
 
 iam-expand --error-on-invalid-format "s3Get*Tagging"
 # Throws an error and returns a non zero exit code
-# Error: Invalid action format: s3Get*Tagging
+# Invalid action format: s3Get*Tagging
 ```
 
 #### `--error-on-invalid-service`
@@ -117,7 +117,7 @@ iam-expand "r2:Get*Tagging"
 
 iam-expand --error-on-invalid-service "r2:Get*Tagging"
 # Throws an error and returns a non zero exit code
-# Error: Service not found: r2
+# Service not found: r2
 ```
 
 #### `--invalid-action-behavior`
@@ -132,7 +132,7 @@ iam-expand --invalid-action-behavior=remove "ec2:DestroyAvailabilityZone"
 
 iam-expand --invalid-action-behavior=error "ec2:DestroyAvailabilityZone"
 # Throws an error and returns a non zero exit code
-# Error: Invalid action: ec2:DestroyAvailabilityZone
+# Invalid action: ec2:DestroyAvailabilityZone
 
 iam-expand --invalid-action-behavior=include "ec2:DestroyAvailabilityZone"
 # Returns the invalid action
@@ -158,7 +158,7 @@ When reading from stdin (see [below](#read-from-stdin)) the CLI will wait 10 sec
 cat policy.json | iam-expand
 # Will wait for 10 seconds for input, which is plenty of time for a local file.
 
-curl "https://governmentsecrets.s3.amazonaws.com/bigfile.json" | iam-expand --read-wait-time=20_000
+curl "https://government-secrets.s3.amazonaws.com/secret-policy.json" | iam-expand --read-wait-time=20_000
 # Will wait for 20 seconds for the first byte from curl before timing out. Adjust as needed
 ```
 
