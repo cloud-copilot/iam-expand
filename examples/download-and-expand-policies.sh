@@ -1,7 +1,7 @@
 #!/bin/bash
 
 : <<'END_COMMENT'
-This script will download all customer-managed policies in the account, expand them, and save them to files
+This script will download all managed policies in the account that are in use, expand them, and save them to files
 in the `policies` directory. The file name will be the policy name with the path as a prefix.
 END_COMMENT
 
