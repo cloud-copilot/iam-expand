@@ -151,14 +151,14 @@ Update with either:
   npm update -g @cloud-copilot/iam-data
 ```
 
-#### `--read-wait-time`
+#### `--read-wait-ms`
 When reading from stdin (see [below](#read-from-stdin)) the CLI will wait 10 seconds for the first byte to be read before timing out. This is enough time for most operations. If you want to wait longer you can set this flag to the number of milliseconds you want to wait.
 
 ```bash
 cat policy.json | iam-expand
 # Will wait for 10 seconds for input, which is plenty of time for a local file.
 
-curl "https://government-secrets.s3.amazonaws.com/secret-policy.json" | iam-expand --read-wait-time=20_000
+curl "https://government-secrets.s3.amazonaws.com/secret-policy.json" | iam-expand --read-wait-ms=20_000
 # Will wait for 20 seconds for the first byte from curl before timing out. Adjust as needed
 ```
 
@@ -232,7 +232,7 @@ Gives this file in `expanded-policy.json`
 
 You can also use this to expand the actions from the output of commands.
 ```bash
-aws iam get-account-authorization-details --output json | iam-expand --expand-service-asterisk --read-wait-time=20_000 > expanded-authorization-details.json
+aws iam get-account-authorization-details --output json | iam-expand --expand-service-asterisk --read-wait-ms=20_000 > expanded-authorization-details.json
 # Now you can search the output for actions you are interested in
 grep -n "kms:DisableKey" expanded-inline-policies.json
 ```

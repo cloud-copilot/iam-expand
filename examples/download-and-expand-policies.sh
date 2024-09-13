@@ -18,5 +18,5 @@ echo "$policies" | jq -c '.[]' | while read -r line; do
   name=$(echo "$line" | jq -r '.Name')
 
   file_name="policies/${path}${name}.json"
-  aws iam get-policy-version --policy-arn "$arn" --version-id "$version_id" --query 'PolicyVersion.Document' --output json 2>/dev/null | iam-expand --read-wait-time=10_000 > $file_name
+  aws iam get-policy-version --policy-arn "$arn" --version-id "$version_id" --query 'PolicyVersion.Document' --output json 2>/dev/null | iam-expand --read-wait-ms=10_000 > $file_name
 done

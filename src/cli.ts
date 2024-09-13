@@ -35,8 +35,8 @@ function printUsage() {
   console.log('    --invalid-action-behavior=error: Throw an error if an invalid action is encountered')
   console.log('CLI Behavior Options:')
   console.log('  --show-data-version: Print the version of the iam-data package being used and exit')
-  console.log('  --read-wait-time: Millisenconds to wait for the first byte from stdin before timing out.')
-  console.log('                    Example: --read-wait-time=10_000')
+  console.log('  --read-wait-ms: Millisenconds to wait for the first byte from stdin before timing out.')
+  console.log('                  Example: --read-wait-ms=10_000')
   process.exit(1)
 }
 

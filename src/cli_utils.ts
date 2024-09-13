@@ -5,7 +5,7 @@ import { readStdin } from "./stdin.js";
 
 interface CliOptions extends ExpandIamActionsOptions {
   showDataVersion: boolean
-  readWaitTime: string
+  readWaitMs: string
 }
 
 /**
@@ -66,7 +66,7 @@ export function extractActionsFromLineOfInput(line: string): string[] {
  * @returns an array of strings from stdin
  */
 export async function parseStdIn(options: Partial<CliOptions>): Promise<{strings?: string[], object?: any}> {
-  const delay = options.readWaitTime ? parseInt(options.readWaitTime.replaceAll(/\D/g, '')) : undefined
+  const delay = options.readWaitMs ? parseInt(options.readWaitMs.replaceAll(/\D/g, '')) : undefined
   const data = await readStdin(delay)
   if(data.length === 0) {
     return {}
