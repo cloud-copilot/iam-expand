@@ -6,6 +6,11 @@ Use this to:
 2) Get an exhaustive list of actions that are included in a policy to quickly search it for interesting actions.
 3) Investigate where interesting or dubious actions are being used in your policies.
 
+<!-- Image of demo.svg -->
+![Demo](assets/demo.svg)
+
+Extended demo [on YouTube](https://www.youtube.com/watch?v=357-uGru7300).
+
 Published as an [npm package](#typescriptnodejs-usage) in ESM and CommonJS plus available as a [CLI](#cli).
 
 All information is sourced from [@cloud-copilot/iam-data](https://github.com/cloud-copilot/iam-data) which is updated daily.
