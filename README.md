@@ -161,10 +161,10 @@ When reading from stdin (see [below](#read-from-stdin)) the CLI will wait 10 sec
 
 ```bash
 cat policy.json | iam-expand
-# Will wait for 10 seconds for input, which is plenty of time for a local file.
+# Will wait up to 10 seconds for input to start, which is plenty of time for a local file.
 
 curl "https://government-secrets.s3.amazonaws.com/secret-policy.json" | iam-expand --read-wait-ms=20_000
-# Will wait for 20 seconds for the first byte from curl before timing out. Adjust as needed
+# Will wait up to 20 seconds to receive first byte from curl before timing out. Adjust as needed
 ```
 
 ### Read from stdin
