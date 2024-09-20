@@ -6,7 +6,6 @@ vi.mock('@cloud-copilot/iam-data')
 
 beforeEach(() => {
   vi.resetAllMocks()
-  // jest.resetAllMocks()
 })
 
 describe("expand", () => {
