@@ -51,7 +51,7 @@ export function convertOptions(optionArgs: string[]): Partial<CliOptions> {
   return options
 }
 
-const actionPattern = /\:?([a-zA-Z0-9-]+:[a-zA-Z0-9*]+)/g;
+const actionPattern = /\:?([a-zA-Z0-9-]+:[a-zA-Z0-9*\?]+)/g;
 export function extractActionsFromLineOfInput(line: string): string[] {
   const matches = line.matchAll(actionPattern)
 
