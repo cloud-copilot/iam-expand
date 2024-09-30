@@ -56,7 +56,7 @@ async function run() {
   const options = convertOptions(optionStrings)
   if(options.showDataVersion) {
     const version = await iamDataVersion()
-    const updatedAt =
+    const updatedAt = await iamDataUpdatedAt()
     console.log(`${dataPackage} version: ${version}`)
     console.log(`Data last updated: ${await iamDataUpdatedAt()}`)
     console.log(`Update with either:`)

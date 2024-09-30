@@ -448,6 +448,46 @@ describe("expand", () => {
     })
   })
 
+  describe('action strings with question marks', () => {
+    it('should expand the action string with all question marks', async () => {
+      //Given actionString has quesiton marks
+      const actionString = 's3:?????????'
+
+      //And s3 service exists
+      vi.mocked(iamServiceExists).mockResolvedValue(true)
+      //And there are matching actions
+      vi.mocked(iamActionsForService).mockResolvedValue(['GetObject', 'PutObject', 'ListObjectTags', 'GetJob'])
+
+      //When expand is called with actionString
+      const result = await expandIamActions(actionString)
+
+      //Then result should be an array of actions
+      expect(result).toEqual([
+        's3:GetObject',
+        's3:PutObject'
+      ])
+    })
+
+    it('should expand the action string with partial question marks', async () => {
+      //Given actionString has quesiton marks in part of the action
+      const actionString = 's3:Get??????'
+
+      //And s3 service exists
+      vi.mocked(iamServiceExists).mockResolvedValue(true)
+      //And there are matching actions
+      vi.mocked(iamActionsForService).mockResolvedValue(['GetObject', 'PutObject', 'ListObjectTags', 'GetJob', 'GetBucket'])
+
+      //When expand is called with actionString
+      const result = await expandIamActions(actionString)
+
+      //Then result should be an array of actions
+      expect(result).toEqual([
+        's3:GetBucket',
+        's3:GetObject'
+      ])
+    })
+  })
+
   it('should return only unique values', async () => {
     //Given two action strings
     const actionString = ['s3:Get*','s3:*Object']

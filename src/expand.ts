@@ -137,7 +137,7 @@ export async function expandIamActions(actionStringOrStrings: string | string[],
     return [`${service}:*`]
   }
 
-  if(!actionString.includes('*')) {
+  if(!actionString.includes('*') && !actionString.includes('?')) {
     const actionExists = await iamActionExists(service, wildcardActions)
     if(actionExists) {
       const details = await iamActionDetails(service, wildcardActions)
@@ -157,7 +157,7 @@ export async function expandIamActions(actionStringOrStrings: string | string[],
   }
 
   const allActions = await iamActionsForService(service)
-  const pattern = "^" + wildcardActions.replace(/\*/g, '.*?') + "$"
+  const pattern = "^" + wildcardActions.replace(/\?/g, '.').replace(/\*/g, '.*?') + "$"
   const regex = new RegExp(pattern, 'i')
   const matchingActions = allActions.filter(action => regex.test(action)).map(action => `${service}:${action}`)
   matchingActions.sort()
