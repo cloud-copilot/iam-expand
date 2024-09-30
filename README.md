@@ -239,7 +239,7 @@ You can also use this to expand the actions from the output of commands.
 ```bash
 aws iam get-account-authorization-details --output json | iam-expand --expand-service-asterisk --read-wait-ms=20_000 > expanded-authorization-details.json
 # Now you can search the output for actions you are interested in
-grep -n "kms:DisableKey" expanded-inline-policies.json
+grep -n "kms:DisableKey" expanded-authorization-details.json
 ```
 
 #### Expanding arbitrary input
