@@ -18,6 +18,9 @@ All information is sourced from [@cloud-copilot/iam-data](https://github.com/clo
 ## Only Valid Values
 `iam-expand` intends to only return valid, actual actions, if any invalid values are passed in such as an invalid format or a service/action that does not exist, they will be left out of the output. There are options to override this behavior.
 
+## Use In Browser
+[http://iam.cloudcopilot.io/tools/iam-expand](http://iam.cloudcopilot.io/tools/iam-expand)
+
 ## CLI
 There is a CLI! The [examples folder](examples/README.md) has examples showing how to use the CLI to find interesting actions in your IAM policies.
 
