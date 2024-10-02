@@ -13,7 +13,7 @@ export async function readStdin(readWait: number | undefined): Promise<string> {
     }
 
     let data = '';
-    setTimeout(() => {
+    const timeout = setTimeout(() => {
       if(data.length === 0) {
         resolve(data)
       }
@@ -25,10 +25,12 @@ export async function readStdin(readWait: number | undefined): Promise<string> {
 
     stdin.on('end', () => {
       resolve(data);
+      clearTimeout(timeout)
     });
 
     stdin.on('error', (err) => {
       reject(err);
+      clearTimeout(timeout)
     });
   });
 }
