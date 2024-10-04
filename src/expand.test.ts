@@ -238,52 +238,16 @@ describe("expand", () => {
   })
 
   describe("when the action string contains a wildcard for a service", () => {
-    it("should expand not expand the wildcard when expandServiceAsterisk is false", async () => {
+    it("should expand the wildcard ", async () => {
       //Given actionString is 's3:*'
       const actionString = 's3:*'
-      //And expandServiceAsterisk is false
-      const options = { expandServiceAsterisk: false }
       //And s3 service exists
       vi.mocked(iamServiceExists).mockResolvedValue(true)
       //And there are matching actions
       vi.mocked(iamActionsForService).mockResolvedValue(['GetObject', 'PutObject'])
 
       //When expand is called with actionString
-      const result = await expandIamActions(actionString, options)
-
-      //Then result should be an array with the original string
-      expect(result).toEqual([actionString])
-    })
-
-    it("should expand not expand the wildcard when there are multiple asterisks and expandServiceAsterisk is false", async () => {
-      //Given actionString has multiple asterisks for the actions
-      const actionString = 's3:****'
-      //And expandServiceAsterisk is false
-      const options = { expandServiceAsterisk: false }
-      //And s3 service exists
-      vi.mocked(iamServiceExists).mockResolvedValue(true)
-      //And there are matching actions
-      vi.mocked(iamActionsForService).mockResolvedValue(['GetObject', 'PutObject'])
-
-      //When expand is called with actionString
-      const result = await expandIamActions(actionString, options)
-
-      //Then result should be an array with the original string
-      expect(result).toEqual(['s3:*'])
-    })
-
-    it("should expand the wildcard when expandServiceAsterisk is true", async () => {
-      //Given actionString is 's3:*'
-      const actionString = 's3:*'
-      //And expandServiceAsterisk is true
-      const options = { expandServiceAsterisk: true }
-      //And s3 service exists
-      vi.mocked(iamServiceExists).mockResolvedValue(true)
-      //And there are matching actions
-      vi.mocked(iamActionsForService).mockResolvedValue(['GetObject', 'PutObject'])
-
-      //When expand is called with actionString
-      const result = await expandIamActions(actionString, options)
+      const result = await expandIamActions(actionString)
 
       //Then result should be an array of actions
       expect(result).toEqual([

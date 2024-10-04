@@ -20,13 +20,6 @@ export interface ExpandIamActionsOptions {
   expandAsterisk: boolean
 
   /**
-   * If true, `service:*` will be expanded to all actions for that service
-   * If false, `service:*` will be returned as is
-   * Default: false
-   */
-  expandServiceAsterisk: boolean
-
-  /**
    * If true, an error will be thrown if the action string is not in the correct format
    * If false, an empty array will be returned
    * Default: false
@@ -53,7 +46,6 @@ export interface ExpandIamActionsOptions {
 
 const defaultOptions: ExpandIamActionsOptions = {
   expandAsterisk: false,
-  expandServiceAsterisk: false,
   errorOnInvalidFormat: false,
   errorOnInvalidService: false,
   invalidActionBehavior: InvalidActionBehavior.Remove,
@@ -129,11 +121,8 @@ export async function expandIamActions(actionStringOrStrings: string | string[],
   }
 
   if(wildcardActions.match(allAsterisksPattern)) {
-    if(options.expandServiceAsterisk) {
-      const actionsForService = await iamActionsForService(service)
-      return actionsForService.map(action => `${service}:${action}`)
-    }
-    return [`${service}:*`]
+    const actionsForService = await iamActionsForService(service)
+    return actionsForService.map(action => `${service}:${action}`)
   }
 
   if(!actionString.includes('*') && !actionString.includes('?')) {
