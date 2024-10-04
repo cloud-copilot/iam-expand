@@ -7,6 +7,7 @@ import { invertIamActions } from "./invert.js";
 
 const commandName = 'iam-expand'
 const dataPackage = '@cloud-copilot/iam-data'
+const fiveDays = 432_000_000
 
 /**
  * Run a function and print the results to the console
@@ -22,6 +23,19 @@ async function runAndPrint(func: () => Promise<string[]>) {
   } catch (e: any) {
     console.error(e.message)
     process.exit(1)
+  }
+}
+
+/**
+ * Check the age of the data package and print a warning if it is over five days old.
+ */
+async function checkDataAge() {
+  const dataFrom = await iamDataUpdatedAt()
+  const dataAge = Date.now() - dataFrom.getTime()
+
+  if(dataAge > fiveDays) {
+    console.warn('Warning: The data package is over five days old. Please run:')
+    console.warn(`  iam-expand --show-data-version`)
   }
 }
 
@@ -100,6 +114,7 @@ async function run() {
       if(options.invert) {
         printWarnings(['--invert is not supported when processing JSON, ignoring. Did you mean --invert-not-actions ?'])
       }
+      await checkDataAge()
       return
     } else if (stdInResult.strings) {
       const otherActions = stdInResult.strings
@@ -123,6 +138,7 @@ async function run() {
     }
 
     printWarnings(warnings)
+    await checkDataAge()
     return
   }
 
