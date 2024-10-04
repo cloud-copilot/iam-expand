@@ -2,14 +2,20 @@
 
 import { iamDataUpdatedAt, iamDataVersion } from "@cloud-copilot/iam-data";
 import { convertOptions, parseStdIn } from "./cli_utils.js";
-import { expandIamActions, ExpandIamActionsOptions } from "./expand.js";
+import { expandIamActions } from "./expand.js";
+import { invert } from "./invert.js";
 
 const commandName = 'iam-expand'
 const dataPackage = '@cloud-copilot/iam-data'
 
-async function expandAndPrint(actionStrings: string[], options: Partial<ExpandIamActionsOptions>) {
+/**
+ * Run a function and print the results to the console
+ *
+ * @param func the function to run
+ */
+async function runAndPrint(func: () => Promise<string[]>) {
   try {
-    const result = await expandIamActions(actionStrings, options)
+    const result = await func()
     for (const action of result) {
       console.log(action)
     }
@@ -19,6 +25,9 @@ async function expandAndPrint(actionStrings: string[], options: Partial<ExpandIa
   }
 }
 
+/**
+ * Print the usage of the CLI to the console
+ */
 function printUsage() {
   console.log('No arguments provided or input from stdin.')
   console.log('Usage:')
@@ -26,18 +35,34 @@ function printUsage() {
   console.log(`  <input from stdout> | ${commandName} [options]`)
   console.log('Action Expanding Options:')
   console.log('  --expand-asterisk: Expand the * action to all actions')
-  console.log('  --expand-service-asterisk: Expand service:* to all actions for that service')
   console.log('  --error-on-invalid-format: Throw an error if the action string is not in the correct format')
   console.log('  --error-on-invalid-service: Throw an error if a service is not found')
   console.log('  --invalid-action-behavior: What to do when an invalid action is encountered:')
   console.log('    --invalid-action-behavior=remove: Remove the invalid action')
   console.log('    --invalid-action-behavior=include: Include the invalid action')
   console.log('    --invalid-action-behavior=error: Throw an error if an invalid action is encountered')
+
+  console.log('Inverting Actions:')
+  console.log('  --invert: If not JSON, print the inverse of the actions provided')
+  console.log('  --invert-not-actions: If JSON, replace NotAction strings or arrays with Action arrays that have the inverse actions')
+
+
   console.log('CLI Behavior Options:')
   console.log('  --show-data-version: Print the version of the iam-data package being used and exit')
   console.log('  --read-wait-ms: Millisenconds to wait for the first byte from stdin before timing out.')
   console.log('                  Example: --read-wait-ms=10_000')
   process.exit(1)
+}
+
+/**
+ * Print a list of warnings to the console
+ *
+ * @param warnings the list of warnings to print
+ */
+function printWarnings(warnings: string[]) {
+  for (const warning of warnings) {
+    console.warn(`Notice: ${warning}`)
+  }
 }
 
 const args = process.argv.slice(2); // Ignore the first two elements
@@ -65,23 +90,39 @@ async function run() {
     return
   }
 
+  const warnings: string[] = []
+
   if(actionStrings.length === 0) {
     //If no actions are provided, read from stdin
     const stdInResult = await parseStdIn(options)
     if(stdInResult.object) {
       console.log(JSON.stringify(stdInResult.object, null, 2))
+      if(options.invert) {
+        printWarnings(['--invert is not supported when processing JSON, ignoring. Did you mean --invert-not-actions ?'])
+      }
       return
     } else if (stdInResult.strings) {
       const otherActions = stdInResult.strings
-      if(otherActions.length > 0 && options.expandAsterisk) {
-        console.warn('Notice: --expand-asterisk is not supported when reading from stdin, ignoring.')
+      if(otherActions.length > 0) {
+        if(options.expandAsterisk) {
+          warnings.push('--expand-asterisk is not supported when reading from stdin, ignoring.')
+        }
       }
       actionStrings.push(...otherActions)
     }
   }
 
   if(actionStrings.length > 0) {
-    await expandAndPrint(actionStrings, options)
+    if(options.invertNotActions) {
+      warnings.push('--invert-not-actions is only supported when processing JSON, ignoring.')
+    }
+    if(options.invert) {
+      await runAndPrint(() => invert(actionStrings, options))
+    } else {
+      await runAndPrint(() => expandIamActions(actionStrings, options))
+    }
+
+    printWarnings(warnings)
     return
   }
 

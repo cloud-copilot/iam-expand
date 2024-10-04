@@ -1,7 +1,7 @@
 import { expandIamActions, ExpandIamActionsOptions } from "./expand.js";
 import { invert } from "./invert.js";
 
-interface ExpandJsonDocumentOptions extends ExpandIamActionsOptions {
+export interface ExpandJsonDocumentOptions extends ExpandIamActionsOptions {
   invertNotActions: boolean
 }
 
