@@ -1,5 +1,5 @@
 # Expand IAM Actions
-Built in the Unix philosophy, this is a small tool that does one thing well: expand IAM actions with wildcards to their list of matching actions.
+Built in the Unix philosophy, this is a small tool that does one thing well: explain IAM actions with wildcards.
 
 Use this to:
 1) Expand wildcards when you are not allowed to use them in your policies.
@@ -66,6 +66,20 @@ s3:PutObjectVersionTagging
 s3:PutStorageLensConfigurationTaggin
 ```
 
+### Inverting Actions
+Use this to find all actions that are not in a set of patterns
+```bash
+iam-expand --invert s3:Get*Tagging s3:Put*Tagging
+#Outputs all actions that are not Get*Tagging or Put*Tagging
+a2c:GetContainerizationJobDetails
+a2c:GetDeploymentJobDetails
+a2c:StartContainerizationJob
+a2c:StartDeploymentJob
+a4b:ApproveSkill
+a4b:AssociateContactWithAddressBook
+...
+```
+
 ### Help
 Run the command with no options to show usage:
 ```bash
@@ -83,21 +97,6 @@ iam-expand "*"
 
 iam-expand --expand-asterisk "*"
 # Returns very many strings, very very fast. 📚 🚀
-```
-
-#### `--expand-service-asterisk`
-By default, a service name followed by a `*` (such as `s3:*` or `lambda:*`) will not be expanded. If you want to expand these you can set this flag.
-```bash
-iam-expand "s3:*"
-# Returns the service:* action
-s3:*
-
-iam-expand --expand-service-asterisk "s3:*"
-# Returns all the s3 actions in order. 🪣
-s3:AbortMultipartUpload
-s3:AssociateAccessGrantsIdentityCenter
-s3:BypassGovernanceRetention
-...
 ```
 
 #### `--error-on-invalid-format`
@@ -146,6 +145,27 @@ iam-expand --invalid-action-behavior=include "ec2:DestroyAvailabilityZone"
 # Returns the invalid action
 ec2:DestroyAvailabilityZone
 ```
+
+#### `--invert`
+Use this to find all actions that are not in a set of patterns. Only works for actions passed as arguments, or unstructured content from stdin.
+```bash
+iam-expand --invert s3:Get*Tagging s3:Put*Tagging
+#Outputs all actions that are not Get*Tagging or Put*Tagging
+a2c:GetContainerizationJobDetails
+a2c:GetDeploymentJobDetails
+a2c:StartContainerizationJob
+a2c:StartDeploymentJob
+a4b:ApproveSkill
+a4b:AssociateContactWithAddressBook
+...
+```
+
+#### `--invert-not-actions`
+*This operates only on JSON input*. It will recursively search the JSON document for any `NotAction` that is a string or and array of strings. The `NotAction` will be replaced with an `Action` key that is the inverse of the `NotAction` actions or patterns.
+```bash
+cat policy.json | iam-expand --invert-not-actions
+```
+See [Read from Stdin](#read-from-stdin) for more details
 
 #### `--show-data-version`
 Show the version of the data that is being used to expand the actions and exit.
@@ -238,9 +258,51 @@ Gives this file in `expanded-policy.json`
  }
 ```
 
+You can also invert the `NotAction` using `--invert-not-actions`.  This will replace the `NotAction` element with an `Action` element that is the inverse of actions listed in the `NotAction`.
+```bash
+cat policy.json | iam-expand --invert-not-actions > inverted-policy.json
+```
+
+Gives this file in `inverted-policy.json`
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      // Was "s3:Get*Tagging"
+      "Action": [
+        "s3:GetBucketTagging",
+        "s3:GetJobTagging",
+        "s3:GetObjectTagging",
+        "s3:GetObjectVersionTagging",
+        "s3:GetStorageLensConfigurationTagging"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Effect": "Deny",
+      // Was NotAction: ["s3:Get*Tagging", "s3:Put*Tagging"]
+      // Now is Action: everything but the Get*Tagging and Put*Tagging actions
+      "Action": [
+        "a2c:GetContainerizationJobDetails",
+        "a2c:GetDeploymentJobDetails",
+        "a2c:StartContainerizationJob",
+        ...
+        "xray:UntagResource",
+        "xray:UpdateGroup",
+        "xray:UpdateSamplingRule",
+      ],
+      "Resource": "*"
+    }
+  ]
+ }
+```
+
+
 You can also use this to expand the actions from the output of commands.
 ```bash
-aws iam get-account-authorization-details --output json | iam-expand --expand-service-asterisk --read-wait-ms=20_000 > expanded-authorization-details.json
+aws iam get-account-authorization-details --output json | iam-expand --read-wait-ms=20_000 > expanded-authorization-details.json
 # Now you can search the output for actions you are interested in
 grep -n "kms:DisableKey" expanded-authorization-details.json
 ```
@@ -313,7 +375,9 @@ expandIamActions(['s3:Get*Tagging', 's3:Put*Tagging'])
 ]
 ```
 
-## API
+## API Reference
+
+## `expandIamActions`
 `expandIamActions(actionStringOrStrings: string | string[], overrideOptions?: Partial<ExpandIamActionsOptions>)` is the main function that will expand the actions of the IAM policy. Takes a string or array of strings and returns an array of strings that the input matches.
 
 ## Only Valid Values
@@ -336,22 +400,6 @@ expandIamActions('*')
 expandIamActions('*', { expandAsterisk: true })
 [
   //Many many strings. 🫢
-]
-```
-### `expandServiceAsterisk`
-By default, a service name followed by a `*` (such as `s3:*` or `lambda:*`) will not be expanded. If you want to expand these you can set this option to `true`.
-
-```typescript
-import { expandIamActions } from '@cloud-copilot/iam-expand';
-
-//Returns the unexpanded value
-expandIamActions('s3:*')
-['s3:*']
-
-//Returns the expanded value
-expandIamActions('s3:*', { expandServiceAsterisk: true })
-[
-  //All the s3 actions. 🫢
 ]
 ```
 
@@ -389,7 +437,7 @@ expandIamActions('r2:Get*Tagging', { errorOnInvalidService: true })
 //Uncaught Error: Service not found: r2
 ```
 
-## `invalidActionBehavior`
+### `invalidActionBehavior`
 By default, if an action is passed in that does not exist in the IAM data, it will be silently ignored and left out of the output. There are two options to override this behavior: `Error` and `Include`.
 
 ```typescript
@@ -412,4 +460,5 @@ expandIamActions('ec2:DestroyAvailabilityZone', { invalidActionBehavior: Invalid
 ['ec2:DestroyAvailabilityZone']
 ```
 
-
+## `invertIamActions`
+`invertIamActions(actionString: string): string` will take an action string and return all actions not matching . For example `s3:Get*Tagging` will return all actions from all services except those s3 actions that match the pattern `Get*Tagging`.

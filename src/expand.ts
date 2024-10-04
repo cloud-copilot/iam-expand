@@ -1,4 +1,5 @@
 import { iamActionDetails, iamActionExists, iamActionsForService, iamServiceExists, iamServiceKeys } from '@cloud-copilot/iam-data'
+import { allAsterisksPattern, convertStringToPattern } from './util.js'
 
 export enum InvalidActionBehavior {
   Remove = "Remove",
@@ -17,13 +18,6 @@ export interface ExpandIamActionsOptions {
    * Default: false
    */
   expandAsterisk: boolean
-
-  /**
-   * If true, `service:*` will be expanded to all actions for that service
-   * If false, `service:*` will be returned as is
-   * Default: false
-   */
-  expandServiceAsterisk: boolean
 
   /**
    * If true, an error will be thrown if the action string is not in the correct format
@@ -52,13 +46,10 @@ export interface ExpandIamActionsOptions {
 
 const defaultOptions: ExpandIamActionsOptions = {
   expandAsterisk: false,
-  expandServiceAsterisk: false,
   errorOnInvalidFormat: false,
   errorOnInvalidService: false,
   invalidActionBehavior: InvalidActionBehavior.Remove,
 }
-
-const allAsterisksPattern = /^\*+$/i
 
 /**
  * Expands an IAM action string that contains wildcards.
@@ -130,11 +121,8 @@ export async function expandIamActions(actionStringOrStrings: string | string[],
   }
 
   if(wildcardActions.match(allAsterisksPattern)) {
-    if(options.expandServiceAsterisk) {
-      const actionsForService = await iamActionsForService(service)
-      return actionsForService.map(action => `${service}:${action}`)
-    }
-    return [`${service}:*`]
+    const actionsForService = await iamActionsForService(service)
+    return actionsForService.map(action => `${service}:${action}`)
   }
 
   if(!actionString.includes('*') && !actionString.includes('?')) {
@@ -157,8 +145,7 @@ export async function expandIamActions(actionStringOrStrings: string | string[],
   }
 
   const allActions = await iamActionsForService(service)
-  const pattern = "^" + wildcardActions.replace(/\?/g, '.').replace(/\*/g, '.*?') + "$"
-  const regex = new RegExp(pattern, 'i')
+  const regex = convertStringToPattern(wildcardActions)
   const matchingActions = allActions.filter(action => regex.test(action)).map(action => `${service}:${action}`)
   matchingActions.sort()
 

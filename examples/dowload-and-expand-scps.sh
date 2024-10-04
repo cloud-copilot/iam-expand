@@ -20,7 +20,7 @@ echo "$policies" | jq -c '.[]' | while read -r line; do
   content=$(echo "$policy_json" | jq -r '.Policy.Content')
   # Expanded SCPs can get too big for bash variables, so using a tmp file
   temp_file=$(mktemp)
-  echo "$content" | iam-expand --expand-service-asterisk > "$temp_file"
+  echo "$content" | iam-expand > "$temp_file"
   updated_json=$(jq --argfile newContent "$temp_file" '.Policy.Content = $newContent' <<< "$policy_json")
   echo "$updated_json" > "$file_name"
   rm "$temp_file"

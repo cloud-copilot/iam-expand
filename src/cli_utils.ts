@@ -1,9 +1,10 @@
 
 import { ExpandIamActionsOptions, InvalidActionBehavior } from "./expand.js";
-import { expandJsonDocument } from "./expand_file.js";
+import { expandJsonDocument, ExpandJsonDocumentOptions } from "./expand_file.js";
 import { readStdin } from "./stdin.js";
 
-interface CliOptions extends ExpandIamActionsOptions {
+interface CliOptions extends ExpandIamActionsOptions, ExpandJsonDocumentOptions {
+  invert: boolean
   showDataVersion: boolean
   readWaitMs: string
 }
