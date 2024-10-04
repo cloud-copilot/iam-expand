@@ -18,7 +18,7 @@ describe('invert', () => {
     const result = invert(actionString as any)
 
     //Then an error should be thrown
-    await expect(result).rejects.toThrow('actionStringOrStrings is required')
+    await expect(result).rejects.toThrow('at least one action must be provided to invert')
   })
 
   it('should return nothing if an asteristk wildcard is provided', async () => {

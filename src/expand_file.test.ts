@@ -2,8 +2,10 @@ import { beforeEach } from "node:test";
 import { describe, expect, it, vi } from "vitest";
 import { expandIamActions } from "./expand.js";
 import { expandJsonDocument } from "./expand_file.js";
+import { invert } from "./invert.js";
 
 vi.mock('./expand.js')
+vi.mock('./invert.js')
 
 beforeEach(() => {
   vi.resetAllMocks()
@@ -179,6 +181,62 @@ describe('expand_file', () => {
 
       // Then the document should be returned as is
       expect(result).toEqual(document)
+    })
+
+    it('should invert a NotAction string if invertNotActions is true', async () => {
+      // Given a document with a NotAction
+      const document = {
+        a: {
+          b: {
+            "NotAction": "s3:Get*"
+          }
+        }
+      }
+      vi.mocked(expandIamActions).mockResolvedValue(["s3:GetObject", "s3:GetBucket"])
+      vi.mocked(invert).mockResolvedValue(["s3:PutBucket", "s3:PutObject"])
+
+      // When the document is expanded
+      const result = await expandJsonDocument({invertNotActions: true}, document)
+
+      // Then the NotAction should be inverted
+      expect(result.a.b).toEqual({Action: ["s3:PutBucket", "s3:PutObject"]})
+    })
+
+    it('should invert a NotAction array if invertNotActions is true', async () => {
+      // Given a document with a NotAction
+      const document = {
+        a: {
+          b: {
+            "NotAction": ["s3:Get*", "s3:Put*"]
+          }
+        }
+      }
+      vi.mocked(expandIamActions).mockResolvedValue(["s3:GetObject", "s3:GetBucket", "s3:PutObject", "s3:PutBucket"])
+      vi.mocked(invert).mockResolvedValue(["s3:ListAccessPoints", "s3:ListBucket"])
+
+      // When the document is expanded
+      const result = await expandJsonDocument({invertNotActions: true}, document)
+
+      // Then the NotAction should be inverted
+      expect(result.a.b).toEqual({Action: ["s3:ListAccessPoints", "s3:ListBucket"]})
+    })
+
+    it('should not invert a Action string if invertNotActions is true', async () => {
+      // Given a document with an Action
+      const document = {
+        a: {
+          b: {
+            "Action": "s3:Get*"
+          }
+        }
+      }
+      vi.mocked(expandIamActions).mockResolvedValue(["s3:GetObject", "s3:GetBucket"])
+
+      // When the document is expanded
+      const result = await expandJsonDocument({invertNotActions: true}, document)
+
+      // Then the document should be returned as is
+      expect(result.a.b).toEqual({Action: ["s3:GetObject", "s3:GetBucket"]})
     })
   })
 })

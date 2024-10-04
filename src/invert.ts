@@ -10,7 +10,7 @@ export async function invert(actionStringOrStrings: string | string[], overrideO
   const options = {...defaultOptions, ...overrideOptions}
 
   if(!actionStringOrStrings) {
-    throw new Error('actionStringOrStrings is required')
+    throw new Error('at least one action must be provided to invert')
   }
 
   let allActionsFound = false
