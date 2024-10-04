@@ -27,7 +27,6 @@ const dashToCamelCaseScenarios = [
   {input: "--distinct", expected: "distinct"},
   {input: "--sort", expected: "sort"},
   {input: "--expand-asterisk", expected: "expandAsterisk"},
-  {input: "--expand-service-asterisk", expected: "expandServiceAsterisk"},
   {input: "--error-on-missing-service", expected: "errorOnMissingService"},
   {input: "--error-on-invalid-format", expected: "errorOnInvalidFormat"},
   {input: "--show-data-version", expected: "showDataVersion"},

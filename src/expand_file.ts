@@ -1,5 +1,5 @@
 import { expandIamActions, ExpandIamActionsOptions } from "./expand.js";
-import { invert } from "./invert.js";
+import { invertIamActions } from "./invert.js";
 
 export interface ExpandJsonDocumentOptions extends ExpandIamActionsOptions {
   invertNotActions: boolean
@@ -37,7 +37,7 @@ export async function expandJsonDocument(options: Partial<ExpandJsonDocumentOpti
 
   if (typeof document === 'object' && document !== null) {
     if(options.invertNotActions && document.NotAction && isStringOrArrayofStrings(document.NotAction)) {
-      document.Action = invert(document.NotAction)
+      document.Action = invertIamActions(document.NotAction)
       delete document.NotAction
     }
 

@@ -6,7 +6,7 @@ export interface InvertIamActionsOptions {
 
 const defaultOptions: InvertIamActionsOptions = {}
 
-export async function invert(actionStringOrStrings: string | string[], overrideOptions?: Partial<InvertIamActionsOptions>): Promise<string[]> {
+export async function invertIamActions(actionStringOrStrings: string | string[], overrideOptions?: Partial<InvertIamActionsOptions>): Promise<string[]> {
   const options = {...defaultOptions, ...overrideOptions}
 
   if(!actionStringOrStrings) {

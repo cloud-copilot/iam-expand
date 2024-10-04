@@ -2,7 +2,7 @@ import { beforeEach } from "node:test";
 import { describe, expect, it, vi } from "vitest";
 import { expandIamActions } from "./expand.js";
 import { expandJsonDocument } from "./expand_file.js";
-import { invert } from "./invert.js";
+import { invertIamActions } from "./invert.js";
 
 vi.mock('./expand.js')
 vi.mock('./invert.js')
@@ -193,7 +193,7 @@ describe('expand_file', () => {
         }
       }
       vi.mocked(expandIamActions).mockResolvedValue(["s3:GetObject", "s3:GetBucket"])
-      vi.mocked(invert).mockResolvedValue(["s3:PutBucket", "s3:PutObject"])
+      vi.mocked(invertIamActions).mockResolvedValue(["s3:PutBucket", "s3:PutObject"])
 
       // When the document is expanded
       const result = await expandJsonDocument({invertNotActions: true}, document)
@@ -212,7 +212,7 @@ describe('expand_file', () => {
         }
       }
       vi.mocked(expandIamActions).mockResolvedValue(["s3:GetObject", "s3:GetBucket", "s3:PutObject", "s3:PutBucket"])
-      vi.mocked(invert).mockResolvedValue(["s3:ListAccessPoints", "s3:ListBucket"])
+      vi.mocked(invertIamActions).mockResolvedValue(["s3:ListAccessPoints", "s3:ListBucket"])
 
       // When the document is expanded
       const result = await expandJsonDocument({invertNotActions: true}, document)

@@ -1,6 +1,6 @@
 import { iamActionsForService, iamServiceKeys } from '@cloud-copilot/iam-data'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { invert } from './invert.js'
+import { invertIamActions } from './invert.js'
 
 vi.mock('@cloud-copilot/iam-data')
 
@@ -8,14 +8,14 @@ beforeEach(() => {
   vi.resetAllMocks()
 })
 
-describe('invert', () => {
+describe('invertIamActions', () => {
 
   it('should throw an error if no action string is provided', async () => {
     //Given no action string
     const actionString = undefined
 
     //When invert is called
-    const result = invert(actionString as any)
+    const result = invertIamActions(actionString as any)
 
     //Then an error should be thrown
     await expect(result).rejects.toThrow('at least one action must be provided to invert')
@@ -26,7 +26,7 @@ describe('invert', () => {
     const actionString = '*'
 
     //When invert is called
-    const result = await invert(actionString)
+    const result = await invertIamActions(actionString)
 
     //Then an empty array should be returned
     expect(result).toEqual([])
@@ -48,7 +48,7 @@ describe('invert', () => {
     })
 
     //When invert is called
-    const result = await invert(actionString)
+    const result = await invertIamActions(actionString)
 
     //Then an empty array should be returned
     expect(result).toEqual(['ec2:action3', 'ec2:action4'])
@@ -70,7 +70,7 @@ describe('invert', () => {
     })
 
     //When invert is called
-    const result = await invert(actionString)
+    const result = await invertIamActions(actionString)
 
     //Then an empty array should be returned
     expect(result).toEqual(['ec2:GetObject', 'ec2:PutObject', 's3:PutObject'])
@@ -92,7 +92,7 @@ describe('invert', () => {
     })
 
     //When invert is called
-    const result = await invert(actionString)
+    const result = await invertIamActions(actionString)
 
     //Then an empty array should be returned
     expect(result).toEqual(['ec2:GetObject', 's3:PutObject'])
@@ -114,7 +114,7 @@ describe('invert', () => {
     })
 
     //When invert is called
-    const result = await invert(actionString)
+    const result = await invertIamActions(actionString)
 
     //Then an empty array should be returned
     expect(result).toEqual(['ec2:GetObject', 'ec2:PutObject', 's3:DeleteObject'])
@@ -136,7 +136,7 @@ describe('invert', () => {
     })
 
     //When invert is called
-    const result = await invert(actionString)
+    const result = await invertIamActions(actionString)
 
     //Then an empty array should be returned
     expect(result).toEqual(['ec2:GetObject', 'ec2:PutObject', 's3:GetObject', 's3:PutObject'])

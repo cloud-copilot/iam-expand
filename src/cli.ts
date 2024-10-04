@@ -3,7 +3,7 @@
 import { iamDataUpdatedAt, iamDataVersion } from "@cloud-copilot/iam-data";
 import { convertOptions, parseStdIn } from "./cli_utils.js";
 import { expandIamActions } from "./expand.js";
-import { invert } from "./invert.js";
+import { invertIamActions } from "./invert.js";
 
 const commandName = 'iam-expand'
 const dataPackage = '@cloud-copilot/iam-data'
@@ -117,7 +117,7 @@ async function run() {
       warnings.push('--invert-not-actions is only supported when processing JSON, ignoring.')
     }
     if(options.invert) {
-      await runAndPrint(() => invert(actionStrings, options))
+      await runAndPrint(() => invertIamActions(actionStrings, options))
     } else {
       await runAndPrint(() => expandIamActions(actionStrings, options))
     }
