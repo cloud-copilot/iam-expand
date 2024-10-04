@@ -1,4 +1,5 @@
 import { iamActionDetails, iamActionExists, iamActionsForService, iamServiceExists, iamServiceKeys } from '@cloud-copilot/iam-data'
+import { allAsterisksPattern, convertStringToPattern } from './util.js'
 
 export enum InvalidActionBehavior {
   Remove = "Remove",
@@ -57,8 +58,6 @@ const defaultOptions: ExpandIamActionsOptions = {
   errorOnInvalidService: false,
   invalidActionBehavior: InvalidActionBehavior.Remove,
 }
-
-const allAsterisksPattern = /^\*+$/i
 
 /**
  * Expands an IAM action string that contains wildcards.
@@ -157,8 +156,7 @@ export async function expandIamActions(actionStringOrStrings: string | string[],
   }
 
   const allActions = await iamActionsForService(service)
-  const pattern = "^" + wildcardActions.replace(/\?/g, '.').replace(/\*/g, '.*?') + "$"
-  const regex = new RegExp(pattern, 'i')
+  const regex = convertStringToPattern(wildcardActions)
   const matchingActions = allActions.filter(action => regex.test(action)).map(action => `${service}:${action}`)
   matchingActions.sort()
 
