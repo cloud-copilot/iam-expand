@@ -161,7 +161,7 @@ a4b:AssociateContactWithAddressBook
 ```
 
 #### `--invert-not-actions`
-*This operates only on JSON input*. It will recursively search the JSON document for any `NotAction` that is a string or and array of strings. The `NotAction` will be replaced with an `Action` key that is the inverse of the `NotAction` actions or patterns.
+*This operates only on JSON input*. It will recursively search the JSON document for any `NotAction` that is a string or an array of strings. The `NotAction` will be replaced with an `Action` key that is the inverse of the `NotAction` actions or patterns.
 ```bash
 cat policy.json | iam-expand --invert-not-actions
 ```
