@@ -1,5 +1,5 @@
 import { iamActionDetails, iamActionExists, iamActionsForService, iamServiceExists, iamServiceKeys } from '@cloud-copilot/iam-data'
-import { allAsterisksPattern, convertStringToPattern } from './util.js'
+import { allAsterisksPattern, convertStringToPattern, unescapeUnicodeCharacters } from './util.js'
 
 export enum InvalidActionBehavior {
   Remove = "Remove",
@@ -81,7 +81,7 @@ export async function expandIamActions(actionStringOrStrings: string | string[],
     return allMatches
   }
 
-  const actionString = actionStringOrStrings.trim()
+  const actionString = unescapeUnicodeCharacters(actionStringOrStrings.trim())
 
   if(actionString.match(allAsterisksPattern)) {
     if(options.expandAsterisk) {

@@ -489,4 +489,24 @@ describe("expand", () => {
     expect(result).toEqual(['ec2:DescribeInstances', 'ec2:DescribeVolumes', 's3:GetBucket', 's3:GetObject'])
   })
 
+  it('should replace unicode characters', async () => {
+    //Given an Action string with unicode characters
+    const actionString = 's3:*\\u0042ucket*'
+
+    //And s3 service exists
+    vi.mocked(iamServiceExists).mockResolvedValue(true)
+    //And there are matching actions
+    vi.mocked(iamActionsForService).mockResolvedValue(['GetBucket', 'PutBucket', 'ListBuckets'])
+
+    //When expand is called with actionString
+    const result = await expandIamActions(actionString)
+
+    //Then result should be an array of actions
+    expect(result).toEqual([
+      's3:GetBucket',
+      's3:ListBuckets',
+      's3:PutBucket'
+    ])
+  })
+
 })

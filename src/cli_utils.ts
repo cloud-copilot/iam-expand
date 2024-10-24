@@ -52,10 +52,9 @@ export function convertOptions(optionArgs: string[]): Partial<CliOptions> {
   return options
 }
 
-const actionPattern = /\:?([a-zA-Z0-9-]+:[a-zA-Z0-9*\?]+)/g;
+const actionPattern = /\:?((\\u[0-9]{4}|[a-zA-Z0-9-])+:(\\u[0-9]{4}|[a-zA-Z0-9*\?]|)+)/g;
 export function extractActionsFromLineOfInput(line: string): string[] {
   const matches = line.matchAll(actionPattern)
-
   return Array.from(matches)
               .filter((match) => !match[0].startsWith('arn:') && !match[0].startsWith(':'))
               .map((match) => match[1])

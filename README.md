@@ -383,6 +383,8 @@ expandIamActions(['s3:Get*Tagging', 's3:Put*Tagging'])
 ## Only Valid Values
 `expandIamActions` intends to only return valid actual actions, if any invalid values are passed in such as an invalid format or a service/action that does not exist, they will be left out of the output. There are options to override this behavior.
 
+Any escaped unicode characters will be converted to their original character as part of the process. So `s3:\\u0067et*` will be converted to `s3:Get*` before processing. Even something like `s3:\\u0067etBucket` will be converted to `s3:GetBucket` even though it has no wildcards..
+
 ## Options
 `expandIamActions` an optional second argument that is an object with the following options:
 
