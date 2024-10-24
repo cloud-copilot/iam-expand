@@ -490,6 +490,30 @@ describe("expand", () => {
   })
 
   it('should replace unicode characters', async () => {
+    //Given Action strings with unicode characters
+    const actionStrings = [
+      's3:*\\u0042ucket*',
+      's3:\\u0067et*'
+    ]
+
+    //And s3 service exists
+    vi.mocked(iamServiceExists).mockResolvedValue(true)
+    //And there are matching actions
+    vi.mocked(iamActionsForService).mockResolvedValue(['GetBucket', 'PutBucket', 'ListBuckets'])
+
+    //When expand is called with the actionStrings
+    const results = await Promise.all(
+      actionStrings.map(async (actionString) => await expandIamActions(actionString))
+    )
+
+    //Then result should be an array of actions
+    expect(results).toEqual([
+      ['s3:GetBucket', 's3:ListBuckets', 's3:PutBucket'],
+      ['s3:GetBucket']
+    ])
+  })
+
+  it('should replace more unicode characters', async () => {
     //Given an Action string with unicode characters
     const actionString = 's3:*\\u0042ucket*'
 

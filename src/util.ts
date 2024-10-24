@@ -12,7 +12,7 @@ export function convertStringToPattern(actionString: string): RegExp {
  * @returns The string with any escaped unicode characters replaced with their actual characters
  */
 export function unescapeUnicodeCharacters(str: string): string {
-  return str.replace(/\\u([\dA-Fa-f]{4,6})/gi, (match, code) => {
+  return str.replace(/\\u([\dA-Fa-f]{4})/gi, (match, code) => {
     return String.fromCharCode(parseInt(code, 16));
   });
 }

@@ -20,7 +20,7 @@ const extractScenarios = [
   {input: "s3:Put*",                     expected: ['s3:Put*']},
   {input: ":s3:Put*",                    expected: []},
   {input: 's3:\\u0067et*',               expected: ['s3:\\u0067et*']},
-  {input: 's3:*\\u0067et*',               expected: ['s3:*\\u0067et*']},
+  {input: 's3:*\\u0067et*',              expected: ['s3:*\\u0067et*']},
   {input: 'arn:aws:apigateway:*::/apis', expected: []},
   {input: 'hamburger',                   expected: []},
 ]
