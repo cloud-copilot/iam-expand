@@ -1,0 +1,27 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "groundstation:\\u0067et*",
+        "groundstation:List*",
+        "s3:Get*Tagging"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Effect": "Deny",
+      "NotAction": [
+        "organizations:*Leave*",
+        "organizations:*Delete*"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "StringEquals": {
+          "aws:username": "FoxMulder"
+        }
+      }
+    }
+  ]
+ }
