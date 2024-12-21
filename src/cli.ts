@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
-import { iamDataUpdatedAt, iamDataVersion } from "@cloud-copilot/iam-data";
-import { convertOptions, parseStdIn } from "./cli_utils.js";
-import { expandIamActions } from "./expand.js";
-import { invertIamActions } from "./invert.js";
+import { iamDataUpdatedAt, iamDataVersion } from '@cloud-copilot/iam-data'
+import { convertOptions, parseStdIn } from './cli_utils.js'
+import { expandIamActions } from './expand.js'
+import { invertIamActions } from './invert.js'
 
 const commandName = 'iam-expand'
 const dataPackage = '@cloud-copilot/iam-data'
@@ -33,7 +33,7 @@ async function checkDataAge() {
   const dataFrom = await iamDataUpdatedAt()
   const dataAge = Date.now() - dataFrom.getTime()
 
-  if(dataAge > fiveDays) {
+  if (dataAge > fiveDays) {
     console.warn('Warning: The data package is over five days old. Please run:')
     console.warn(`  iam-expand --show-data-version`)
   }
@@ -42,6 +42,7 @@ async function checkDataAge() {
 /**
  * Print the usage of the CLI to the console
  */
+// prettier-ignore
 function printUsage() {
   console.log('No arguments provided or input from stdin.')
   console.log('Usage:')
@@ -79,12 +80,12 @@ function printWarnings(warnings: string[]) {
   }
 }
 
-const args = process.argv.slice(2); // Ignore the first two elements
+const args = process.argv.slice(2) // Ignore the first two elements
 const actionStrings: string[] = []
 const optionStrings: string[] = []
 
 for (const arg of args) {
-  if(arg.startsWith('--')) {
+  if (arg.startsWith('--')) {
     optionStrings.push(arg)
   } else {
     actionStrings.push(arg)
@@ -93,7 +94,7 @@ for (const arg of args) {
 
 async function run() {
   const options = convertOptions(optionStrings)
-  if(options.showDataVersion) {
+  if (options.showDataVersion) {
     const version = await iamDataVersion()
     const updatedAt = await iamDataUpdatedAt()
     console.log(`${dataPackage} version: ${version}`)
@@ -106,20 +107,22 @@ async function run() {
 
   const warnings: string[] = []
 
-  if(actionStrings.length === 0) {
+  if (actionStrings.length === 0) {
     //If no actions are provided, read from stdin
     const stdInResult = await parseStdIn(options)
-    if(stdInResult.object) {
+    if (stdInResult.object) {
       console.log(JSON.stringify(stdInResult.object, null, 2))
-      if(options.invert) {
-        printWarnings(['--invert is not supported when processing JSON, ignoring. Did you mean --invert-not-actions ?'])
+      if (options.invert) {
+        printWarnings([
+          '--invert is not supported when processing JSON, ignoring. Did you mean --invert-not-actions ?'
+        ])
       }
       await checkDataAge()
       return
     } else if (stdInResult.strings) {
       const otherActions = stdInResult.strings
-      if(otherActions.length > 0) {
-        if(options.expandAsterisk) {
+      if (otherActions.length > 0) {
+        if (options.expandAsterisk) {
           warnings.push('--expand-asterisk is not supported when reading from stdin, ignoring.')
         }
       }
@@ -127,11 +130,11 @@ async function run() {
     }
   }
 
-  if(actionStrings.length > 0) {
-    if(options.invertNotActions) {
+  if (actionStrings.length > 0) {
+    if (options.invertNotActions) {
       warnings.push('--invert-not-actions is only supported when processing JSON, ignoring.')
     }
-    if(options.invert) {
+    if (options.invert) {
       await runAndPrint(() => invertIamActions(actionStrings, options))
     } else {
       await runAndPrint(() => expandIamActions(actionStrings, options))
@@ -145,7 +148,10 @@ async function run() {
   printUsage()
 }
 
-run().catch((e) => {
-  console.error(e)
-  process.exit(1)
-}).then(() => {}).finally(() => {})
+run()
+  .catch((e) => {
+    console.error(e)
+    process.exit(1)
+  })
+  .then(() => {})
+  .finally(() => {})

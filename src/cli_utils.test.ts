@@ -1,7 +1,12 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { convertOptions, dashToCamelCase, extractActionsFromLineOfInput, parseStdIn } from "./cli_utils";
-import { InvalidActionBehavior } from './expand.js';
-import { readStdin } from './stdin';
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import {
+  convertOptions,
+  dashToCamelCase,
+  extractActionsFromLineOfInput,
+  parseStdIn
+} from './cli_utils'
+import { InvalidActionBehavior } from './expand.js'
+import { readStdin } from './stdin'
 vi.mock('./stdin')
 
 beforeEach(() => {
@@ -9,29 +14,29 @@ beforeEach(() => {
 })
 
 const extractScenarios = [
-  {input: '  s3:Get*   ',                expected: ['s3:Get*']},
-  {input: '  s3:Get* s3:Put*  ',         expected: ['s3:Get*', 's3:Put*']},
-  {input: '  "s3:Get*", "s3:Put*"',      expected: ['s3:Get*', 's3:Put*']},
-  {input: '  `s3:Get*`, `s3:Put*`',      expected: ['s3:Get*', 's3:Put*']},
-  {input: `  's3:Get*', 's3:Put*'`,      expected: ['s3:Get*', 's3:Put*']},
-  {input: `  'resource-Groups:Get*'`,    expected: ['resource-Groups:Get*']},
-  {input: `s3:Get*, s3:Put*`,            expected: ['s3:Get*', 's3:Put*']},
-  {input: `s3:Get??????, s3:????????`,   expected: ['s3:Get??????', 's3:????????']},
-  {input: "s3:Put*",                     expected: ['s3:Put*']},
-  {input: ":s3:Put*",                    expected: []},
-  {input: 's3:\\u0067et*',               expected: ['s3:\\u0067et*']},
-  {input: 's3:*\\u0067et*',              expected: ['s3:*\\u0067et*']},
-  {input: 'arn:aws:apigateway:*::/apis', expected: []},
-  {input: 'hamburger',                   expected: []},
+  { input: '  s3:Get*   ', expected: ['s3:Get*'] },
+  { input: '  s3:Get* s3:Put*  ', expected: ['s3:Get*', 's3:Put*'] },
+  { input: '  "s3:Get*", "s3:Put*"', expected: ['s3:Get*', 's3:Put*'] },
+  { input: '  `s3:Get*`, `s3:Put*`', expected: ['s3:Get*', 's3:Put*'] },
+  { input: `  's3:Get*', 's3:Put*'`, expected: ['s3:Get*', 's3:Put*'] },
+  { input: `  'resource-Groups:Get*'`, expected: ['resource-Groups:Get*'] },
+  { input: `s3:Get*, s3:Put*`, expected: ['s3:Get*', 's3:Put*'] },
+  { input: `s3:Get??????, s3:????????`, expected: ['s3:Get??????', 's3:????????'] },
+  { input: 's3:Put*', expected: ['s3:Put*'] },
+  { input: ':s3:Put*', expected: [] },
+  { input: 's3:\\u0067et*', expected: ['s3:\\u0067et*'] },
+  { input: 's3:*\\u0067et*', expected: ['s3:*\\u0067et*'] },
+  { input: 'arn:aws:apigateway:*::/apis', expected: [] },
+  { input: 'hamburger', expected: [] }
 ]
 
 const dashToCamelCaseScenarios = [
-  {input: "--distinct", expected: "distinct"},
-  {input: "--sort", expected: "sort"},
-  {input: "--expand-asterisk", expected: "expandAsterisk"},
-  {input: "--error-on-missing-service", expected: "errorOnMissingService"},
-  {input: "--error-on-invalid-format", expected: "errorOnInvalidFormat"},
-  {input: "--show-data-version", expected: "showDataVersion"},
+  { input: '--distinct', expected: 'distinct' },
+  { input: '--sort', expected: 'sort' },
+  { input: '--expand-asterisk', expected: 'expandAsterisk' },
+  { input: '--error-on-missing-service', expected: 'errorOnMissingService' },
+  { input: '--error-on-invalid-format', expected: 'errorOnInvalidFormat' },
+  { input: '--show-data-version', expected: 'showDataVersion' }
 ]
 
 describe('cli_utils', () => {
@@ -78,7 +83,7 @@ describe('cli_utils', () => {
         distinct: true,
         sort: true,
         somethingCool: true,
-        keyWithValue: "10",
+        keyWithValue: '10'
       })
     })
 
@@ -91,7 +96,7 @@ describe('cli_utils', () => {
 
       // Then the invalidActionBehavior should be an enum
       expect(result).toEqual({
-        invalidActionBehavior: InvalidActionBehavior.Error,
+        invalidActionBehavior: InvalidActionBehavior.Error
       })
     })
 
@@ -127,14 +132,14 @@ describe('cli_utils', () => {
       const result = await parseStdIn({})
 
       // Then I should get the expected actions
-      expect(result).toEqual({strings: ['s3:GetObject', 's3:PutObject', 's3:DeleteObject']})
+      expect(result).toEqual({ strings: ['s3:GetObject', 's3:PutObject', 's3:DeleteObject'] })
     })
 
     it('should return an object if the data can be parsed', async () => {
       // Given there is data that can be parsed
       const dataValue = {
-        Action: ["s3:GetObject"],
-        Version: "2012-10-17"
+        Action: ['s3:GetObject'],
+        Version: '2012-10-17'
       }
       vi.mocked(readStdin).mockResolvedValue(JSON.stringify(dataValue))
 
@@ -142,8 +147,7 @@ describe('cli_utils', () => {
       const result = await parseStdIn({})
 
       // Then I should get the expected object
-      expect(result).toEqual({object: dataValue})
+      expect(result).toEqual({ object: dataValue })
     })
   })
 })
-

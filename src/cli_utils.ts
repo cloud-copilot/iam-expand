@@ -1,7 +1,6 @@
-
-import { ExpandIamActionsOptions, InvalidActionBehavior } from "./expand.js";
-import { expandJsonDocument, ExpandJsonDocumentOptions } from "./expand_file.js";
-import { readStdin } from "./stdin.js";
+import { ExpandIamActionsOptions, InvalidActionBehavior } from './expand.js'
+import { expandJsonDocument, ExpandJsonDocumentOptions } from './expand_file.js'
+import { readStdin } from './stdin.js'
 
 interface CliOptions extends ExpandIamActionsOptions, ExpandJsonDocumentOptions {
   invert: boolean
@@ -16,7 +15,7 @@ interface CliOptions extends ExpandIamActionsOptions, ExpandJsonDocumentOptions 
  */
 export function dashToCamelCase(str: string): string {
   str = str.substring(2)
-  return str.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
+  return str.replace(/-([a-z])/g, (g) => g[1].toUpperCase())
 }
 
 /**
@@ -26,23 +25,24 @@ export function dashToCamelCase(str: string): string {
  * @returns the object representation of the options
  */
 export function convertOptions(optionArgs: string[]): Partial<CliOptions> {
-  const options: Record<string, string | boolean> = {} ;
+  const options: Record<string, string | boolean> = {}
 
-  for(const option of optionArgs) {
+  for (const option of optionArgs) {
     let key: string = option
     let value: boolean | string = true
-    if(option.includes('=')) {
-      [key,value] = option.split('=')
+    if (option.includes('=')) {
+      ;[key, value] = option.split('=')
     }
 
     options[dashToCamelCase(key)] = value
   }
 
-  if(typeof(options.invalidActionBehavior) === 'string') {
+  if (typeof options.invalidActionBehavior === 'string') {
     const behaviorString = options.invalidActionBehavior as string
-    const cleanedInput = behaviorString.charAt(0).toUpperCase() + behaviorString.slice(1).toLowerCase();
-    const behavior = InvalidActionBehavior[cleanedInput as keyof typeof InvalidActionBehavior];
-    if(behavior) {
+    const cleanedInput =
+      behaviorString.charAt(0).toUpperCase() + behaviorString.slice(1).toLowerCase()
+    const behavior = InvalidActionBehavior[cleanedInput as keyof typeof InvalidActionBehavior]
+    if (behavior) {
       options.invalidActionBehavior = behavior
     } else {
       delete options['invalidActionBehavior']
@@ -52,12 +52,12 @@ export function convertOptions(optionArgs: string[]): Partial<CliOptions> {
   return options
 }
 
-const actionPattern = /\:?((\\u[0-9]{4}|[a-zA-Z0-9-])+:(\\u[0-9]{4}|[a-zA-Z0-9*\?]|)+)/g;
+const actionPattern = /\:?((\\u[0-9]{4}|[a-zA-Z0-9-])+:(\\u[0-9]{4}|[a-zA-Z0-9*\?]|)+)/g
 export function extractActionsFromLineOfInput(line: string): string[] {
   const matches = line.matchAll(actionPattern)
   return Array.from(matches)
-              .filter((match) => !match[0].startsWith('arn:') && !match[0].startsWith(':'))
-              .map((match) => match[1])
+    .filter((match) => !match[0].startsWith('arn:') && !match[0].startsWith(':'))
+    .map((match) => match[1])
 }
 
 /**
@@ -65,20 +65,21 @@ export function extractActionsFromLineOfInput(line: string): string[] {
  *
  * @returns an array of strings from stdin
  */
-export async function parseStdIn(options: Partial<CliOptions>): Promise<{strings?: string[], object?: any}> {
+export async function parseStdIn(
+  options: Partial<CliOptions>
+): Promise<{ strings?: string[]; object?: any }> {
   const delay = options.readWaitMs ? parseInt(options.readWaitMs.replaceAll(/\D/g, '')) : undefined
   const data = await readStdin(delay)
-  if(data.length === 0) {
+  if (data.length === 0) {
     return {}
   }
 
   try {
     const object = await expandJsonDocument(options, JSON.parse(data))
-    return {object}
+    return { object }
   } catch (err: any) {}
 
-
   const lines = data.split('\n')
-  const actions = lines.flatMap(line => extractActionsFromLineOfInput(line))
-  return {strings: actions}
+  const actions = lines.flatMap((line) => extractActionsFromLineOfInput(line))
+  return { strings: actions }
 }

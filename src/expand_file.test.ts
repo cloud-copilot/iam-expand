@@ -1,8 +1,8 @@
-import { beforeEach } from "node:test";
-import { describe, expect, it, vi } from "vitest";
-import { expandIamActions } from "./expand.js";
-import { expandJsonDocument } from "./expand_file.js";
-import { invertIamActions } from "./invert.js";
+import { beforeEach } from 'node:test'
+import { describe, expect, it, vi } from 'vitest'
+import { expandIamActions } from './expand.js'
+import { expandJsonDocument } from './expand_file.js'
+import { invertIamActions } from './invert.js'
 
 vi.mock('./expand.js')
 vi.mock('./invert.js')
@@ -16,8 +16,8 @@ describe('expand_file', () => {
     it('should return a document without actions as is', async () => {
       // Given a document without actions
       const document = {
-        "key": "value",
-        "key2": ["value1", "value2"]
+        key: 'value',
+        key2: ['value1', 'value2']
       }
 
       // When the document is expanded
@@ -32,18 +32,18 @@ describe('expand_file', () => {
       const document = {
         a: {
           b: {
-            "Action": "s3:Get*"
+            Action: 's3:Get*'
           }
         }
       }
-      vi.mocked(expandIamActions).mockResolvedValue(["s3:GetObject", "s3:GetBucket"])
+      vi.mocked(expandIamActions).mockResolvedValue(['s3:GetObject', 's3:GetBucket'])
 
       // When the document is expanded
       const result = await expandJsonDocument({}, document)
 
       // Then the action should be expanded
       const expected = JSON.parse(JSON.stringify(document))
-      expected.a.b.Action = ["s3:GetObject", "s3:GetBucket"]
+      expected.a.b.Action = ['s3:GetObject', 's3:GetBucket']
       expect(result).toEqual(expected)
     })
 
@@ -52,12 +52,12 @@ describe('expand_file', () => {
       const document = {
         a: {
           b: {
-            "Action": ["s3:Get*", "s3:Put*"]
+            Action: ['s3:Get*', 's3:Put*']
           }
         }
       }
-      vi.mocked(expandIamActions).mockImplementation(async (actions, options) =>{
-        return ["s3:GetObject", "s3:GetBucket", "s3:PutObject", "s3:PutBucket"]
+      vi.mocked(expandIamActions).mockImplementation(async (actions, options) => {
+        return ['s3:GetObject', 's3:GetBucket', 's3:PutObject', 's3:PutBucket']
       })
 
       // When the document is expanded
@@ -65,7 +65,7 @@ describe('expand_file', () => {
 
       // Then the action should be expanded
       const expected = JSON.parse(JSON.stringify(document))
-      expected.a.b.Action = ["s3:GetObject", "s3:GetBucket", "s3:PutObject", "s3:PutBucket"]
+      expected.a.b.Action = ['s3:GetObject', 's3:GetBucket', 's3:PutObject', 's3:PutBucket']
       expect(result).toEqual(expected)
     })
 
@@ -74,8 +74,8 @@ describe('expand_file', () => {
       const document = {
         a: {
           b: {
-            "Action": {
-              "key": "value"
+            Action: {
+              key: 'value'
             }
           }
         }
@@ -93,7 +93,7 @@ describe('expand_file', () => {
       const document = {
         a: {
           b: {
-            "Action": [1, 2, 3]
+            Action: [1, 2, 3]
           }
         }
       }
@@ -110,18 +110,18 @@ describe('expand_file', () => {
       const document = {
         a: {
           b: {
-            "NotAction": "s3:Get*"
+            NotAction: 's3:Get*'
           }
         }
       }
-      vi.mocked(expandIamActions).mockResolvedValue(["s3:GetObject", "s3:GetBucket"])
+      vi.mocked(expandIamActions).mockResolvedValue(['s3:GetObject', 's3:GetBucket'])
 
       // When the document is expanded
       const result = await expandJsonDocument({}, document)
 
       // Then the action should be expanded
       const expected = JSON.parse(JSON.stringify(document))
-      expected.a.b.NotAction = ["s3:GetObject", "s3:GetBucket"]
+      expected.a.b.NotAction = ['s3:GetObject', 's3:GetBucket']
       expect(result).toEqual(expected)
     })
 
@@ -130,12 +130,12 @@ describe('expand_file', () => {
       const document = {
         a: {
           b: {
-            "NotAction": ["s3:Get*", "s3:Put*"]
+            NotAction: ['s3:Get*', 's3:Put*']
           }
         }
       }
-      vi.mocked(expandIamActions).mockImplementation(async (actions, options) =>{
-        return ["s3:GetObject", "s3:GetBucket", "s3:PutObject", "s3:PutBucket"]
+      vi.mocked(expandIamActions).mockImplementation(async (actions, options) => {
+        return ['s3:GetObject', 's3:GetBucket', 's3:PutObject', 's3:PutBucket']
       })
 
       // When the document is expanded
@@ -143,7 +143,7 @@ describe('expand_file', () => {
 
       // Then the action should be expanded
       const expected = JSON.parse(JSON.stringify(document))
-      expected.a.b.NotAction = ["s3:GetObject", "s3:GetBucket", "s3:PutObject", "s3:PutBucket"]
+      expected.a.b.NotAction = ['s3:GetObject', 's3:GetBucket', 's3:PutObject', 's3:PutBucket']
       expect(result).toEqual(expected)
     })
 
@@ -152,8 +152,8 @@ describe('expand_file', () => {
       const document = {
         a: {
           b: {
-            "NotAction": {
-              "key": "value"
+            NotAction: {
+              key: 'value'
             }
           }
         }
@@ -171,7 +171,7 @@ describe('expand_file', () => {
       const document = {
         a: {
           b: {
-            "NotAction": [1, 2, 3]
+            NotAction: [1, 2, 3]
           }
         }
       }
@@ -188,18 +188,18 @@ describe('expand_file', () => {
       const document = {
         a: {
           b: {
-            "NotAction": "s3:Get*"
+            NotAction: 's3:Get*'
           }
         }
       }
-      vi.mocked(expandIamActions).mockResolvedValue(["s3:GetObject", "s3:GetBucket"])
-      vi.mocked(invertIamActions).mockResolvedValue(["s3:PutBucket", "s3:PutObject"])
+      vi.mocked(expandIamActions).mockResolvedValue(['s3:GetObject', 's3:GetBucket'])
+      vi.mocked(invertIamActions).mockResolvedValue(['s3:PutBucket', 's3:PutObject'])
 
       // When the document is expanded
-      const result = await expandJsonDocument({invertNotActions: true}, document)
+      const result = await expandJsonDocument({ invertNotActions: true }, document)
 
       // Then the NotAction should be inverted
-      expect(result.a.b).toEqual({Action: ["s3:PutBucket", "s3:PutObject"]})
+      expect(result.a.b).toEqual({ Action: ['s3:PutBucket', 's3:PutObject'] })
     })
 
     it('should invert a NotAction array if invertNotActions is true', async () => {
@@ -207,18 +207,23 @@ describe('expand_file', () => {
       const document = {
         a: {
           b: {
-            "NotAction": ["s3:Get*", "s3:Put*"]
+            NotAction: ['s3:Get*', 's3:Put*']
           }
         }
       }
-      vi.mocked(expandIamActions).mockResolvedValue(["s3:GetObject", "s3:GetBucket", "s3:PutObject", "s3:PutBucket"])
-      vi.mocked(invertIamActions).mockResolvedValue(["s3:ListAccessPoints", "s3:ListBucket"])
+      vi.mocked(expandIamActions).mockResolvedValue([
+        's3:GetObject',
+        's3:GetBucket',
+        's3:PutObject',
+        's3:PutBucket'
+      ])
+      vi.mocked(invertIamActions).mockResolvedValue(['s3:ListAccessPoints', 's3:ListBucket'])
 
       // When the document is expanded
-      const result = await expandJsonDocument({invertNotActions: true}, document)
+      const result = await expandJsonDocument({ invertNotActions: true }, document)
 
       // Then the NotAction should be inverted
-      expect(result.a.b).toEqual({Action: ["s3:ListAccessPoints", "s3:ListBucket"]})
+      expect(result.a.b).toEqual({ Action: ['s3:ListAccessPoints', 's3:ListBucket'] })
     })
 
     it('should not invert a Action string if invertNotActions is true', async () => {
@@ -226,17 +231,17 @@ describe('expand_file', () => {
       const document = {
         a: {
           b: {
-            "Action": "s3:Get*"
+            Action: 's3:Get*'
           }
         }
       }
-      vi.mocked(expandIamActions).mockResolvedValue(["s3:GetObject", "s3:GetBucket"])
+      vi.mocked(expandIamActions).mockResolvedValue(['s3:GetObject', 's3:GetBucket'])
 
       // When the document is expanded
-      const result = await expandJsonDocument({invertNotActions: true}, document)
+      const result = await expandJsonDocument({ invertNotActions: true }, document)
 
       // Then the document should be returned as is
-      expect(result.a.b).toEqual({Action: ["s3:GetObject", "s3:GetBucket"]})
+      expect(result.a.b).toEqual({ Action: ['s3:GetObject', 's3:GetBucket'] })
     })
   })
 })

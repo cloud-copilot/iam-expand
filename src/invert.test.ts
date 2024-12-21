@@ -9,7 +9,6 @@ beforeEach(() => {
 })
 
 describe('invertIamActions', () => {
-
   it('should throw an error if no action string is provided', async () => {
     //Given no action string
     const actionString = undefined
@@ -38,10 +37,10 @@ describe('invertIamActions', () => {
     //And there are two services with actions
     vi.mocked(iamServiceKeys).mockResolvedValue(['s3', 'ec2'])
     vi.mocked(iamActionsForService).mockImplementation(async (service) => {
-      if(service === 's3') {
+      if (service === 's3') {
         return ['action1', 'action2']
       }
-      if(service === 'ec2') {
+      if (service === 'ec2') {
         return ['action3', 'action4']
       }
       return []
@@ -60,10 +59,10 @@ describe('invertIamActions', () => {
     //And there are two services with actions
     vi.mocked(iamServiceKeys).mockResolvedValue(['s3', 'ec2'])
     vi.mocked(iamActionsForService).mockImplementation(async (service) => {
-      if(service === 's3') {
+      if (service === 's3') {
         return ['GetObjcet', 'PutObject']
       }
-      if(service === 'ec2') {
+      if (service === 'ec2') {
         return ['GetObject', 'PutObject']
       }
       return []
@@ -82,10 +81,10 @@ describe('invertIamActions', () => {
     //And there are two services with actions
     vi.mocked(iamServiceKeys).mockResolvedValue(['s3', 'ec2'])
     vi.mocked(iamActionsForService).mockImplementation(async (service) => {
-      if(service === 's3') {
+      if (service === 's3') {
         return ['GetObject', 'PutObject']
       }
-      if(service === 'ec2') {
+      if (service === 'ec2') {
         return ['GetObject', 'PutObject']
       }
       return []
@@ -104,10 +103,10 @@ describe('invertIamActions', () => {
     //And there are two services with actions
     vi.mocked(iamServiceKeys).mockResolvedValue(['s3', 'ec2'])
     vi.mocked(iamActionsForService).mockImplementation(async (service) => {
-      if(service === 's3') {
+      if (service === 's3') {
         return ['GetObject', 'PutObject', 'DeleteObject']
       }
-      if(service === 'ec2') {
+      if (service === 'ec2') {
         return ['GetObject', 'PutObject']
       }
       return []
@@ -126,10 +125,10 @@ describe('invertIamActions', () => {
     //And there are two services with actions
     vi.mocked(iamServiceKeys).mockResolvedValue(['s3', 'ec2'])
     vi.mocked(iamActionsForService).mockImplementation(async (service) => {
-      if(service === 's3') {
+      if (service === 's3') {
         return ['GetObject', 'PutObject']
       }
-      if(service === 'ec2') {
+      if (service === 'ec2') {
         return ['GetObject', 'PutObject']
       }
       return []

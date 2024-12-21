@@ -1,7 +1,7 @@
 export const allAsterisksPattern = /^\*+$/i
 
 export function convertStringToPattern(actionString: string): RegExp {
-  const pattern = "^" + actionString.replace(/\?/g, '.').replace(/\*/g, '.*?') + "$"
+  const pattern = '^' + actionString.replace(/\?/g, '.').replace(/\*/g, '.*?') + '$'
   return new RegExp(pattern, 'i')
 }
 
@@ -13,6 +13,6 @@ export function convertStringToPattern(actionString: string): RegExp {
  */
 export function unescapeUnicodeCharacters(str: string): string {
   return str.replace(/\\u([\dA-Fa-f]{4})/gi, (match, code) => {
-    return String.fromCharCode(parseInt(code, 16));
-  });
+    return String.fromCharCode(parseInt(code, 16))
+  })
 }

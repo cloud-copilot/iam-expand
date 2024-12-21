@@ -1,15 +1,17 @@
-import { iamActionsForService, iamServiceKeys } from "@cloud-copilot/iam-data"
-import { allAsterisksPattern, convertStringToPattern } from "./util.js"
+import { iamActionsForService, iamServiceKeys } from '@cloud-copilot/iam-data'
+import { allAsterisksPattern, convertStringToPattern } from './util.js'
 
-export interface InvertIamActionsOptions {
-}
+export interface InvertIamActionsOptions {}
 
 const defaultOptions: InvertIamActionsOptions = {}
 
-export async function invertIamActions(actionStringOrStrings: string | string[], overrideOptions?: Partial<InvertIamActionsOptions>): Promise<string[]> {
-  const options = {...defaultOptions, ...overrideOptions}
+export async function invertIamActions(
+  actionStringOrStrings: string | string[],
+  overrideOptions?: Partial<InvertIamActionsOptions>
+): Promise<string[]> {
+  const options = { ...defaultOptions, ...overrideOptions }
 
-  if(!actionStringOrStrings) {
+  if (!actionStringOrStrings) {
     throw new Error('at least one action must be provided to invert')
   }
 
@@ -17,45 +19,51 @@ export async function invertIamActions(actionStringOrStrings: string | string[],
   const servicesToExclude = new Set<string>()
   const excludePatterns: Record<string, RegExp[]> = {}
 
-  const actionsToInvert = Array.isArray(actionStringOrStrings) ? actionStringOrStrings : [actionStringOrStrings]
-  for(const action of actionsToInvert) {
-    if(action.match(allAsterisksPattern)) {
+  const actionsToInvert = Array.isArray(actionStringOrStrings)
+    ? actionStringOrStrings
+    : [actionStringOrStrings]
+  for (const action of actionsToInvert) {
+    if (action.match(allAsterisksPattern)) {
       allActionsFound = true
-      break;
+      break
     }
     const parts = action.split(':')
-    if(parts.length !== 2) {
-      continue;
+    if (parts.length !== 2) {
+      continue
     }
-    const [service, wildcardActions] = parts.map(part => part.toLowerCase())
-    if(wildcardActions.match(allAsterisksPattern)) {
+    const [service, wildcardActions] = parts.map((part) => part.toLowerCase())
+    if (wildcardActions.match(allAsterisksPattern)) {
       servicesToExclude.add(service)
-      continue;
+      continue
     }
-    if(!excludePatterns[service]) {
+    if (!excludePatterns[service]) {
       excludePatterns[service] = []
     }
     excludePatterns[service].push(convertStringToPattern(wildcardActions))
   }
 
-  if(allActionsFound) {
+  if (allActionsFound) {
     return []
   }
 
   const allServices = await iamServiceKeys()
-  const actionLists = await Promise.all(allServices.map(async (serviceKey) => {
-    if(servicesToExclude.has(serviceKey)) {
-      return []
-    }
-    const serviceActions = await iamActionsForService(serviceKey)
-    const excludePatternsForService = excludePatterns[serviceKey] || []
-    if(excludePatternsForService.length === 0) {
-      return serviceActions.map(action => `${serviceKey}:${action}`)
-    }
-    return serviceActions.filter(action => {
-      return !excludePatternsForService.some(pattern => action.match(pattern))
-    }).map(action => `${serviceKey}:${action}`)
-  }))
+  const actionLists = await Promise.all(
+    allServices.map(async (serviceKey) => {
+      if (servicesToExclude.has(serviceKey)) {
+        return []
+      }
+      const serviceActions = await iamActionsForService(serviceKey)
+      const excludePatternsForService = excludePatterns[serviceKey] || []
+      if (excludePatternsForService.length === 0) {
+        return serviceActions.map((action) => `${serviceKey}:${action}`)
+      }
+      return serviceActions
+        .filter((action) => {
+          return !excludePatternsForService.some((pattern) => action.match(pattern))
+        })
+        .map((action) => `${serviceKey}:${action}`)
+    })
+  )
 
-  return  Array.from(new Set(actionLists.flat())).sort()
+  return Array.from(new Set(actionLists.flat())).sort()
 }

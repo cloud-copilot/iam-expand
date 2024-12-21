@@ -1,10 +1,16 @@
-import { iamActionDetails, iamActionExists, iamActionsForService, iamServiceExists, iamServiceKeys } from '@cloud-copilot/iam-data'
+import {
+  iamActionDetails,
+  iamActionExists,
+  iamActionsForService,
+  iamServiceExists,
+  iamServiceKeys
+} from '@cloud-copilot/iam-data'
 import { allAsterisksPattern, convertStringToPattern, unescapeUnicodeCharacters } from './util.js'
 
 export enum InvalidActionBehavior {
-  Remove = "Remove",
-  Error = "Error",
-  Include = "Include",
+  Remove = 'Remove',
+  Error = 'Error',
+  Include = 'Include'
 }
 
 /**
@@ -48,7 +54,7 @@ const defaultOptions: ExpandIamActionsOptions = {
   expandAsterisk: false,
   errorOnInvalidFormat: false,
   errorOnInvalidService: false,
-  invalidActionBehavior: InvalidActionBehavior.Remove,
+  invalidActionBehavior: InvalidActionBehavior.Remove
 }
 
 /**
@@ -62,18 +68,23 @@ const defaultOptions: ExpandIamActionsOptions = {
  * @param overrideOptions Options to override the default behavior
  * @returns An array of expanded action strings flattend to a single array
  */
-export async function expandIamActions(actionStringOrStrings: string | string[], overrideOptions?: Partial<ExpandIamActionsOptions>): Promise<string[]> {
-  const options = {...defaultOptions, ...overrideOptions}
+export async function expandIamActions(
+  actionStringOrStrings: string | string[],
+  overrideOptions?: Partial<ExpandIamActionsOptions>
+): Promise<string[]> {
+  const options = { ...defaultOptions, ...overrideOptions }
 
-  if(!actionStringOrStrings) {
+  if (!actionStringOrStrings) {
     //Just in case the user passes in null or undefined
     return []
   }
 
-  if(Array.isArray(actionStringOrStrings)) {
-    const actionLists = await Promise.all(actionStringOrStrings.map(async (actionString) => {
-      return expandIamActions(actionString, options);
-    }))
+  if (Array.isArray(actionStringOrStrings)) {
+    const actionLists = await Promise.all(
+      actionStringOrStrings.map(async (actionString) => {
+        return expandIamActions(actionString, options)
+      })
+    )
 
     const allMatches = Array.from(new Set(actionLists.flat()))
     allMatches.sort()
@@ -83,60 +94,60 @@ export async function expandIamActions(actionStringOrStrings: string | string[],
 
   const actionString = unescapeUnicodeCharacters(actionStringOrStrings.trim())
 
-  if(actionString.match(allAsterisksPattern)) {
-    if(options.expandAsterisk) {
+  if (actionString.match(allAsterisksPattern)) {
+    if (options.expandAsterisk) {
       //If that's really what you want...
       const allActions = []
       const serviceKeys = await iamServiceKeys()
       for await (const service of serviceKeys) {
         const serviceActions = await iamActionsForService(service)
-        allActions.push(...serviceActions.map(action => `${service}:${action}`))
+        allActions.push(...serviceActions.map((action) => `${service}:${action}`))
       }
       return allActions
     }
     return ['*']
   }
 
-  if(!actionString.includes(':')) {
-    if(options.errorOnInvalidFormat) {
+  if (!actionString.includes(':')) {
+    if (options.errorOnInvalidFormat) {
       throw new Error(`Invalid action format: ${actionString}`)
     }
     return []
   }
 
   const parts = actionString.split(':')
-  if(parts.length !== 2) {
-    if(options.errorOnInvalidFormat) {
+  if (parts.length !== 2) {
+    if (options.errorOnInvalidFormat) {
       throw new Error(`Invalid action format: ${actionString}`)
     }
     return []
   }
 
-  const [service, wildcardActions] = parts.map(part => part.toLowerCase())
-  if(!await iamServiceExists(service)) {
-    if(options.errorOnInvalidService) {
+  const [service, wildcardActions] = parts.map((part) => part.toLowerCase())
+  if (!(await iamServiceExists(service))) {
+    if (options.errorOnInvalidService) {
       throw new Error(`Service not found: ${service}`)
     }
     return []
   }
 
-  if(wildcardActions.match(allAsterisksPattern)) {
+  if (wildcardActions.match(allAsterisksPattern)) {
     const actionsForService = await iamActionsForService(service)
-    return actionsForService.map(action => `${service}:${action}`)
+    return actionsForService.map((action) => `${service}:${action}`)
   }
 
-  if(!actionString.includes('*') && !actionString.includes('?')) {
+  if (!actionString.includes('*') && !actionString.includes('?')) {
     const actionExists = await iamActionExists(service, wildcardActions)
-    if(actionExists) {
+    if (actionExists) {
       const details = await iamActionDetails(service, wildcardActions)
-      return [service + ":" + details.name]
+      return [service + ':' + details.name]
     }
 
-    if(options.invalidActionBehavior === InvalidActionBehavior.Remove) {
+    if (options.invalidActionBehavior === InvalidActionBehavior.Remove) {
       return []
-    } else if(options.invalidActionBehavior === InvalidActionBehavior.Include) {
+    } else if (options.invalidActionBehavior === InvalidActionBehavior.Include) {
       return [actionString]
-    } else if(options.invalidActionBehavior === InvalidActionBehavior.Error) {
+    } else if (options.invalidActionBehavior === InvalidActionBehavior.Error) {
       throw new Error(`Invalid action: ${actionString}`)
     } else {
       //This should never happen
@@ -146,7 +157,9 @@ export async function expandIamActions(actionStringOrStrings: string | string[],
 
   const allActions = await iamActionsForService(service)
   const regex = convertStringToPattern(wildcardActions)
-  const matchingActions = allActions.filter(action => regex.test(action)).map(action => `${service}:${action}`)
+  const matchingActions = allActions
+    .filter((action) => regex.test(action))
+    .map((action) => `${service}:${action}`)
   matchingActions.sort()
 
   return matchingActions
