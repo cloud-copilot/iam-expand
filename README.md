@@ -1,12 +1,17 @@
 # Expand IAM Actions
+
+[![NPM Version](https://img.shields.io/npm/v/@cloud-copilot/iam-expand.svg?logo=nodedotjs)](https://www.npmjs.com/package/@cloud-copilot/iam-expand) [![License: AGPL v3](https://img.shields.io/github/license/cloud-copilot/iam-expand)](LICENSE.txt) [![GuardDog](https://github.com/cloud-copilot/iam-expand/actions/workflows/guarddog.yml/badge.svg)](https://github.com/cloud-copilot/iam-expand/actions/workflows/guarddog.yml) [![Known Vulnerabilities](https://snyk.io/test/github/cloud-copilot/iam-expand/badge.svg?targetFile=package.json&style=flat-square)](https://snyk.io/test/github/cloud-copilot/iam-expand?targetFile=package.json)
+
 Built in the Unix philosophy, this is a small tool that does one thing well: explain IAM actions with wildcards.
 
 Use this to:
-1) Expand wildcards when you are not allowed to use them in your policies.
-2) Get an exhaustive list of actions that are included in a policy to quickly search it for interesting actions.
-3) Investigate where interesting or dubious actions are being used in your policies.
+
+1. Expand wildcards when you are not allowed to use them in your policies.
+2. Get an exhaustive list of actions that are included in a policy to quickly search it for interesting actions.
+3. Investigate where interesting or dubious actions are being used in your policies.
 
 <!-- Image of demo.svg -->
+
 ![Demo](assets/demo.svg)
 
 Extended demo [on YouTube](https://www.youtube.com/watch?v=357-uGru7300).
@@ -16,23 +21,31 @@ Published as an [npm package](#typescriptnodejs-usage) in ESM and CommonJS plus 
 All information is sourced from [@cloud-copilot/iam-data](https://github.com/cloud-copilot/iam-data) which is updated daily.
 
 ## Only Valid Values
+
 `iam-expand` intends to only return valid, actual actions, if any invalid values are passed in such as an invalid format or a service/action that does not exist, they will be left out of the output. There are options to override this behavior.
 
 ## Use In Browser
+
 [http://iam.cloudcopilot.io/tools/iam-expand](http://iam.cloudcopilot.io/tools/iam-expand)
 
 ## CLI
+
 There is a CLI! The [examples folder](examples/README.md) has examples showing how to use the CLI to find interesting actions in your IAM policies.
 
 ### Global CLI Installation
+
 You can install it globally. This also works in the default AWS CloudShell!
+
 ```bash
 npm install -g @cloud-copilot/iam-expand
 ```
-*Depending on your configuration sudo may be required to install globally.*
+
+_Depending on your configuration sudo may be required to install globally._
 
 ### Install CLI In a Project
+
 You can also install the CLI in a project and run it with `npx`.
+
 ```bash
 npm install @cloud-copilot/iam-expand
 # Run with npx inside your project
@@ -40,7 +53,9 @@ npx @cloud-copilot/iam-expand
 ```
 
 ### Expand Actions
+
 The simplest usage is to pass in the actions you want to expand.
+
 ```bash
 iam-expand s3:Get*Tagging
 # Outputs all Get*Tagging actions
@@ -67,7 +82,9 @@ s3:PutStorageLensConfigurationTaggin
 ```
 
 ### Inverting Actions
+
 Use this to find all actions that are not in a set of patterns
+
 ```bash
 iam-expand --invert s3:Get*Tagging s3:Put*Tagging
 #Outputs all actions that are not Get*Tagging or Put*Tagging
@@ -81,7 +98,9 @@ a4b:AssociateContactWithAddressBook
 ```
 
 ### Help
+
 Run the command with no options to show usage:
+
 ```bash
 iam-expand
 ```
@@ -89,7 +108,9 @@ iam-expand
 ### Options
 
 #### `--expand-asterisk`
+
 By default, a single `*` will not be expanded. If you want to expand a single `*` you can set this flag.
+
 ```bash
 iam-expand "*"
 # Returns the asterisk
@@ -100,9 +121,11 @@ iam-expand --expand-asterisk "*"
 ```
 
 #### `--error-on-invalid-format`
+
 By default, if an invalid format is passed in, such as:
-*  `s3Get*Tagging` (missing a separator) or
-*  `s3:Get:Tagging*` (too many separators)
+
+- `s3Get*Tagging` (missing a separator) or
+- `s3:Get:Tagging*` (too many separators)
 
 it will be silenty ignored and left out of the output. If you want to throw an error when an invalid format is passed in you can set this flag.
 
@@ -116,6 +139,7 @@ iam-expand --error-on-invalid-format "s3Get*Tagging"
 ```
 
 #### `--error-on-invalid-service`
+
 By default, if a service is passed in that does not exist in the IAM data, it will be silently ignored and left out of the output. If you want to throw an error when a service is passed in that does not exist you can set this flag.
 
 ```bash
@@ -128,6 +152,7 @@ iam-expand --error-on-invalid-service "r2:Get*Tagging"
 ```
 
 #### `--invalid-action-behavior`
+
 By default, if an action is passed in that does not exist in the IAM data, it will be silently ignored and left out of the output. There are two options to override this behavior: `error` and `include`.
 
 ```bash
@@ -147,7 +172,9 @@ ec2:DestroyAvailabilityZone
 ```
 
 #### `--invert`
+
 Use this to find all actions that are not in a set of patterns. Only works for actions passed as arguments, or unstructured content from stdin.
+
 ```bash
 iam-expand --invert s3:Get*Tagging s3:Put*Tagging
 #Outputs all actions that are not Get*Tagging or Put*Tagging
@@ -161,13 +188,17 @@ a4b:AssociateContactWithAddressBook
 ```
 
 #### `--invert-not-actions`
-*This operates only on JSON input*. It will recursively search the JSON document for any `NotAction` that is a string or an array of strings. The `NotAction` will be replaced with an `Action` key that is the inverse of the `NotAction` actions or patterns.
+
+_This operates only on JSON input_. It will recursively search the JSON document for any `NotAction` that is a string or an array of strings. The `NotAction` will be replaced with an `Action` key that is the inverse of the `NotAction` actions or patterns.
+
 ```bash
 cat policy.json | iam-expand --invert-not-actions
 ```
+
 See [Read from Stdin](#read-from-stdin) for more details
 
 #### `--show-data-version`
+
 Show the version of the data that is being used to expand the actions and exit.
 
 ```bash
@@ -180,6 +211,7 @@ Update with either:
 ```
 
 #### `--read-wait-ms`
+
 When reading from stdin (see [below](#read-from-stdin)) the CLI will wait 10 seconds for the first byte to be read before timing out. This is enough time for most operations. If you want to wait longer you can set this flag to the number of milliseconds you want to wait.
 
 ```bash
@@ -191,15 +223,17 @@ curl "https://government-secrets.s3.amazonaws.com/secret-policy.json" | iam-expa
 ```
 
 ### Read from stdin
+
 If no actions are passed as arguments, the CLI will read from stdin.
 
 #### Expanding JSON input
+
 If the input is a valid json document, the CLI will find every instance of `Action` and `NotAction` that is a string or an array of strings and expand them. This is useful for finding all the actions in a policy document or set of documents.
 
 Given `policy.json`
-```json
 
- {
+```json
+{
   "Version": "2012-10-17",
   "Statement": [
     {
@@ -213,7 +247,7 @@ Given `policy.json`
       "Resource": "*"
     }
   ]
- }
+}
 ```
 
 ```bash
@@ -221,6 +255,7 @@ cat policy.json | iam-expand > expanded-policy.json
 ```
 
 Gives this file in `expanded-policy.json`
+
 ```json
 {
   "Version": "2012-10-17",
@@ -255,15 +290,17 @@ Gives this file in `expanded-policy.json`
       "Resource": "*"
     }
   ]
- }
+}
 ```
 
-You can also invert the `NotAction` using `--invert-not-actions`.  This will replace the `NotAction` element with an `Action` element that is the inverse of actions listed in the `NotAction`.
+You can also invert the `NotAction` using `--invert-not-actions`. This will replace the `NotAction` element with an `Action` element that is the inverse of actions listed in the `NotAction`.
+
 ```bash
 cat policy.json | iam-expand --invert-not-actions > inverted-policy.json
 ```
 
 Gives this file in `inverted-policy.json`
+
 ```json
 {
   "Version": "2012-10-17",
@@ -299,8 +336,8 @@ Gives this file in `inverted-policy.json`
  }
 ```
 
-
 You can also use this to expand the actions from the output of commands.
+
 ```bash
 aws iam get-account-authorization-details --output json | iam-expand --read-wait-ms=20_000 > expanded-authorization-details.json
 # Now you can search the output for actions you are interested in
@@ -308,29 +345,35 @@ grep -n "kms:DisableKey" expanded-authorization-details.json
 ```
 
 #### Expanding arbitrary input
+
 If the input from stdin is not json, the content is searched for IAM actions then expands them. Throw anything at it and it will find all the actions it can and expand them.
 
 You can echo content:
+
 ```bash
 echo "s3:Get*Tagging" | iam-expand
 ```
 
 You can pull out part of a json file and pipe it in:
+
 ```bash
 cat policy.json | jq '.Statement[].Action' | iam-expand
 ```
 
 Or some Terraform:
+
 ```bash
 cat main.tf | iam-expand
 ```
 
 Or some CloudFormation:
+
 ```bash
 cat template.yaml | iam-expand
 ```
 
 Or even some HTML:
+
 ```bash
 curl "https://docs.aws.amazon.com/aws-managed-policy/latest/reference/ReadOnlyAccess.html" | iam-expand
 ```
@@ -344,25 +387,24 @@ Please give this anything you can think of and open an issue if you see an oppor
 ## Typescript/NodeJS Usage
 
 ## Add to a project
+
 ```bash
 npm install @cloud-copilot/iam-expand
 ```
 
 ```typescript
-import { expandIamActions } from '@cloud-copilot/iam-expand';
+import { expandIamActions } from '@cloud-copilot/iam-expand'
 
-expandIamActions('s3:Get*Tagging')
-[
-  's3:GetBucketTagging',
+expandIamActions('s3:Get*Tagging')[
+  ('s3:GetBucketTagging',
   's3:GetJobTagging',
   's3:GetObjectTagging',
   's3:GetObjectVersionTagging',
-  's3:GetStorageLensConfigurationTagging'
+  's3:GetStorageLensConfigurationTagging')
 ]
 
-expandIamActions(['s3:Get*Tagging', 's3:Put*Tagging'])
-[
-  's3:GetBucketTagging',
+expandIamActions(['s3:Get*Tagging', 's3:Put*Tagging'])[
+  ('s3:GetBucketTagging',
   's3:GetJobTagging',
   's3:GetObjectTagging',
   's3:GetObjectVersionTagging',
@@ -371,24 +413,28 @@ expandIamActions(['s3:Get*Tagging', 's3:Put*Tagging'])
   's3:PutJobTagging',
   's3:PutObjectTagging',
   's3:PutObjectVersionTagging',
-  's3:PutStorageLensConfigurationTagging'
+  's3:PutStorageLensConfigurationTagging')
 ]
 ```
 
 ## API Reference
 
 ## `expandIamActions`
+
 `expandIamActions(actionStringOrStrings: string | string[], overrideOptions?: Partial<ExpandIamActionsOptions>)` is the main function that will expand the actions of the IAM policy. Takes a string or array of strings and returns an array of strings that the input matches.
 
 ## Only Valid Values
+
 `expandIamActions` intends to only return valid actual actions, if any invalid values are passed in such as an invalid format or a service/action that does not exist, they will be left out of the output. There are options to override this behavior.
 
 Any escaped unicode characters will be converted to their original character as part of the process. So `s3:\\u0067et*` will be converted to `s3:Get*` before processing. Even something like `s3:\\u0067etBucket` will be converted to `s3:GetBucket` even though it has no wildcards..
 
 ## Options
+
 `expandIamActions` an optional second argument that is an object with the following options:
 
 ### `expandAsterisk`
+
 By default, a single `*` will not be expanded. If you want to expand a single `*` you can set this option to `true`.
 
 ```typescript
@@ -406,9 +452,11 @@ expandIamActions('*', { expandAsterisk: true })
 ```
 
 ### `errorOnInvalidFormat`
+
 By default, if an invalid format is passed in, such as:
-*  `s3Get*Tagging` (missing a separator) or
-*  `s3:Get:Tagging*` (too many separators)
+
+- `s3Get*Tagging` (missing a separator) or
+- `s3:Get:Tagging*` (too many separators)
 
 it will be silenty ignored and left out of the output. If you want to throw an error when an invalid format is passed in you can set this option to `true`.
 
@@ -425,6 +473,7 @@ expandIamActions('s3Get*Tagging', { errorOnInvalidFormat: true })
 ```
 
 ### `errorOnInvalidService`
+
 By default, if a service is passed in that does not exist in the IAM data, it will be silently ignored and left out of the output. If you want to throw an error when a service is passed in that does not exist you can set this option to `true`.
 
 ```typescript
@@ -440,6 +489,7 @@ expandIamActions('r2:Get*Tagging', { errorOnInvalidService: true })
 ```
 
 ### `invalidActionBehavior`
+
 By default, if an action is passed in that does not exist in the IAM data, it will be silently ignored and left out of the output. There are two options to override this behavior: `Error` and `Include`.
 
 ```typescript
@@ -463,4 +513,5 @@ expandIamActions('ec2:DestroyAvailabilityZone', { invalidActionBehavior: Invalid
 ```
 
 ## `invertIamActions`
+
 `invertIamActions(actionString: string): string` will take an action string and return all actions not matching . For example `s3:Get*Tagging` will return all actions from all services except those s3 actions that match the pattern `Get*Tagging`.
