@@ -159,14 +159,14 @@ By default, if an action is passed in that does not exist in the IAM data, it wi
 iam-expand "ec2:DestroyAvailabilityZone"
 # Returns nothing
 
-iam-expand --invalid-action-behavior=remove "ec2:DestroyAvailabilityZone"
+iam-expand --invalid-action-behavior remove "ec2:DestroyAvailabilityZone"
 # Returns nothing
 
-iam-expand --invalid-action-behavior=error "ec2:DestroyAvailabilityZone"
+iam-expand --invalid-action-behavior error "ec2:DestroyAvailabilityZone"
 # Throws an error and returns a non zero exit code
 # Invalid action: ec2:DestroyAvailabilityZone
 
-iam-expand --invalid-action-behavior=include "ec2:DestroyAvailabilityZone"
+iam-expand --invalid-action-behavior include "ec2:DestroyAvailabilityZone"
 # Returns the invalid action
 ec2:DestroyAvailabilityZone
 ```
@@ -218,7 +218,7 @@ When reading from stdin (see [below](#read-from-stdin)) the CLI will wait 10 sec
 cat policy.json | iam-expand
 # Will wait up to 10 seconds for input to start, which is plenty of time for a local file.
 
-curl "https://government-secrets.s3.amazonaws.com/secret-policy.json" | iam-expand --read-wait-ms=20_000
+curl "https://government-secrets.s3.amazonaws.com/secret-policy.json" | iam-expand --read-wait-ms 20000
 # Will wait up to 20 seconds to receive first byte from curl before timing out. Adjust as needed
 ```
 
@@ -339,7 +339,7 @@ Gives this file in `inverted-policy.json`
 You can also use this to expand the actions from the output of commands.
 
 ```bash
-aws iam get-account-authorization-details --output json | iam-expand --read-wait-ms=20_000 > expanded-authorization-details.json
+aws iam get-account-authorization-details --output json | iam-expand --read-wait-ms 20000 > expanded-authorization-details.json
 # Now you can search the output for actions you are interested in
 grep -n "kms:DisableKey" expanded-authorization-details.json
 ```

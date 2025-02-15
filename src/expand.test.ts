@@ -150,7 +150,7 @@ describe('expand', () => {
 
       //When expand is called with actionString
       //Then an error should be thrown
-      expect(expandIamActions(actionString, options)).rejects.toThrowError('Invalid action')
+      await expect(expandIamActions(actionString, options)).rejects.toThrowError('Invalid action')
     })
   })
 
@@ -189,7 +189,7 @@ describe('expand', () => {
 
       //When expand is called with actionString
       //Then an error should be thrown
-      expect(() => expandIamActions(actionString, options)).rejects.toThrowError(
+      await expect(() => expandIamActions(actionString, options)).rejects.toThrowError(
         'Invalid action format'
       )
     })
@@ -202,7 +202,7 @@ describe('expand', () => {
 
       //When expand is called with actionString
       //Then an error should be thrown
-      expect(() => expandIamActions(actionString, options)).rejects.toThrowError(
+      await expect(() => expandIamActions(actionString, options)).rejects.toThrowError(
         'Invalid action format'
       )
     })
@@ -230,7 +230,7 @@ describe('expand', () => {
 
       //When expand is called with actionString
       //Then an error should be thrown
-      expect(() => expandIamActions(actionString, options)).rejects.toThrowError(
+      await expect(() => expandIamActions(actionString, options)).rejects.toThrowError(
         'Service not found'
       )
     })

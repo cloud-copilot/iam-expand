@@ -109,5 +109,8 @@
         }
       ]
     ]
+  },
+  "dependencies": {
+    "@cloud-copilot/cli": "^0.1.13"
   }
 }
