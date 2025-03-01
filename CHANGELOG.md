@@ -1,3 +1,10 @@
+## [0.11.2](https://github.com/cloud-copilot/iam-expand/compare/v0.11.1...v0.11.2) (2025-03-01)
+
+
+### Bug Fixes
+
+* adding a clearer message if there is no valid input ([704fa7d](https://github.com/cloud-copilot/iam-expand/commit/704fa7d40d174d6be0c1102cec7dfa4065145711))
+
 ## [0.11.1](https://github.com/cloud-copilot/iam-expand/compare/v0.11.0...v0.11.1) (2025-02-15)
 
 
