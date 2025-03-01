@@ -164,6 +164,8 @@ async function run() {
     await checkDataAge()
     return
   }
+
+  console.log('No actions provided or input from stdin')
   cli.printHelp()
 }
 
