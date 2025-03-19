@@ -60,17 +60,17 @@ async function run() {
       expandAsterisk: {
         character: 'e',
         description: 'Expand the * action to all actions',
-        values: 'none'
+        type: 'boolean'
       },
       errorOnInvalidFormat: {
         character: 'f',
         description: 'Throw an error if the action string is not in the correct format',
-        values: 'none'
+        type: 'boolean'
       },
       errorOnInvalidService: {
         character: 's',
         description: 'Throw an error if a service is not found',
-        values: 'none'
+        type: 'boolean'
       },
       invalidActionBehavior: {
         description: 'What to do when an invalid action is encountered',
@@ -81,18 +81,18 @@ async function run() {
       invert: {
         character: 'i',
         description: 'If not JSON, print the inverse of the actions provided',
-        values: 'none'
+        type: 'boolean'
       },
       invertNotActions: {
         character: 'n',
         description:
           'If JSON, replace NotAction strings or arrays with Action arrays that have the inverse actions',
-        values: 'none'
+        type: 'boolean'
       },
       showDataVersion: {
         character: 'v',
         description: 'Print the version of the iam-data package being used and exit',
-        values: 'none'
+        type: 'boolean'
       },
       readWaitMs: {
         description: 'Milliseconds to wait for the first byte from stdin before timing out',
