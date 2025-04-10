@@ -1,3 +1,10 @@
+## [0.11.6](https://github.com/cloud-copilot/iam-expand/compare/v0.11.5...v0.11.6) (2025-04-10)
+
+
+### Features
+
+* Add new function `matchesAnyAction` to check if a pattern matches any one action. Add new function `actionMatchesPattern` to see if a pattern matches a specific action. ([902c184](https://github.com/cloud-copilot/iam-expand/commit/902c184f34a5790fddfb5543ca1dbfeb3d067a5b))
+
 ## [0.11.5](https://github.com/cloud-copilot/iam-expand/compare/v0.11.4...v0.11.5) (2025-04-05)
 
 ## [0.11.4](https://github.com/cloud-copilot/iam-expand/compare/v0.11.3...v0.11.4) (2025-03-19)
