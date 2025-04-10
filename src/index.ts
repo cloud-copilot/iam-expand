@@ -1,3 +1,4 @@
+export { actionMatchesPattern, matchesAnyAction } from './actions.js'
 export { extractActionsFromLineOfInput } from './cli_utils.js'
 export {
   expandIamActions,

@@ -6,7 +6,7 @@ export function convertStringToPattern(actionString: string): RegExp {
 }
 
 /**
- * Unecapes unicode characters in a string
+ * Unescapes unicode characters in a string
  *
  * @param str The string to unescape
  * @returns The string with any escaped unicode characters replaced with their actual characters
