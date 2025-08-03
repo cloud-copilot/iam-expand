@@ -111,6 +111,6 @@
     ]
   },
   "dependencies": {
-    "@cloud-copilot/cli": "^0.1.16"
+    "@cloud-copilot/cli": "^0.2.2"
   }
 }

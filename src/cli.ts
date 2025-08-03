@@ -1,10 +1,16 @@
 #!/usr/bin/env node
 
-import { parseCliArguments } from '@cloud-copilot/cli'
+import {
+  booleanArgument,
+  enumArgument,
+  numberArgument,
+  parseCliArguments
+} from '@cloud-copilot/cli'
 import { iamDataUpdatedAt, iamDataVersion } from '@cloud-copilot/iam-data'
 import { invalidActionBehaviorForString, parseStdIn } from './cli_utils.js'
 import { expandIamActions } from './expand.js'
 import { invertIamActions } from './invert.js'
+import { getPackageFileReader } from './readPackageFile.js'
 
 const dataPackage = '@cloud-copilot/iam-data'
 const fiveDays = 432_000_000
@@ -53,57 +59,54 @@ function printWarnings(warnings: string[]) {
 const actionStrings: string[] = []
 
 async function run() {
-  const cli = parseCliArguments(
+  const cli = await parseCliArguments(
     'iam-expand',
     {},
     {
-      expandAsterisk: {
+      expandAsterisk: booleanArgument({
         character: 'e',
-        description: 'Expand the * action to all actions',
-        type: 'boolean'
-      },
-      errorOnInvalidFormat: {
+        description: 'Expand the * action to all actions'
+      }),
+      errorOnInvalidFormat: booleanArgument({
         character: 'f',
-        description: 'Throw an error if the action string is not in the correct format',
-        type: 'boolean'
-      },
-      errorOnInvalidService: {
+        description: 'Throw an error if the action string is not in the correct format'
+      }),
+      errorOnInvalidService: booleanArgument({
         character: 's',
-        description: 'Throw an error if a service is not found',
-        type: 'boolean'
-      },
-      invalidActionBehavior: {
+        description: 'Throw an error if a service is not found'
+      }),
+      invalidActionBehavior: enumArgument({
         description: 'What to do when an invalid action is encountered',
-        values: 'single',
-        type: 'enum',
         validValues: ['remove', 'include', 'error']
-      },
-      invert: {
+      }),
+      invert: booleanArgument({
         character: 'i',
-        description: 'If not JSON, print the inverse of the actions provided',
-        type: 'boolean'
-      },
-      invertNotActions: {
+        description: 'If not JSON, print the inverse of the actions provided'
+      }),
+      invertNotActions: booleanArgument({
         character: 'n',
         description:
-          'If JSON, replace NotAction strings or arrays with Action arrays that have the inverse actions',
-        type: 'boolean'
-      },
-      showDataVersion: {
-        character: 'v',
-        description: 'Print the version of the iam-data package being used and exit',
-        type: 'boolean'
-      },
-      readWaitMs: {
-        description: 'Milliseconds to wait for the first byte from stdin before timing out',
-        values: 'single',
-        type: 'number'
-      }
+          'If JSON, replace NotAction strings or arrays with Action arrays that have the inverse actions'
+      }),
+      showDataVersion: booleanArgument({
+        character: 'd',
+        description: 'Print the version of the iam-data package being used and exit'
+      }),
+      readWaitMs: numberArgument({
+        description: 'Milliseconds to wait for the first byte from stdin before timing out'
+      })
     },
     {
       operandsName: 'action',
       envPrefix: 'IAM_EXPAND',
-      allowOperandsFromStdin: true
+      allowOperandsFromStdin: true,
+      version: {
+        currentVersion: async () => {
+          const pkgData = await getPackageFileReader().readFile(['package.json'])
+          return JSON.parse(pkgData).version
+        },
+        checkForUpdates: '@cloud-copilot/iam-expand'
+      }
     }
   )
 
