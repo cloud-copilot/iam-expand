@@ -1,3 +1,10 @@
+## [0.11.22](https://github.com/cloud-copilot/iam-expand/compare/v0.11.21...v0.11.22) (2025-08-03)
+
+
+### Features
+
+* Upgrade CLI, add --version option ([1e6024c](https://github.com/cloud-copilot/iam-expand/commit/1e6024c1d03a11442206809dd3d3ced4d8eaf71d))
+
 ## [0.11.21](https://github.com/cloud-copilot/iam-expand/compare/v0.11.20...v0.11.21) (2025-08-03)
 
 ## [0.11.20](https://github.com/cloud-copilot/iam-expand/compare/v0.11.19...v0.11.20) (2025-07-26)
