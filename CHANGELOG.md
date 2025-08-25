@@ -1,3 +1,10 @@
+## [0.11.27](https://github.com/cloud-copilot/iam-expand/compare/v0.11.26...v0.11.27) (2025-08-25)
+
+
+### Features
+
+* Upgrade iam-data ([da16de7](https://github.com/cloud-copilot/iam-expand/commit/da16de7fc391f7ab52e73ad305a0d1057088216f))
+
 ## [0.11.26](https://github.com/cloud-copilot/iam-expand/compare/v0.11.25...v0.11.26) (2025-08-25)
 
 
