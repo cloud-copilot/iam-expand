@@ -52,7 +52,7 @@
     "vitest": "^3.0.7"
   },
   "peerDependencies": {
-    "@cloud-copilot/iam-data": ">=0.7.0 <1.0.0"
+    "@cloud-copilot/iam-data": ">=0.10.0 <1.0.0"
   },
   "prettier": "@cloud-copilot/prettier-config",
   "release": {
