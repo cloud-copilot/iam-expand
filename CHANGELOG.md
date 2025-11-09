@@ -1,3 +1,10 @@
+## [0.11.40](https://github.com/cloud-copilot/iam-expand/compare/v0.11.39...v0.11.40) (2025-11-09)
+
+
+### Bug Fixes
+
+* Remove GuardDog package scan ([2a2fc86](https://github.com/cloud-copilot/iam-expand/commit/2a2fc86a55540f046287e84a54ec50f4665e1605))
+
 ## [0.11.39](https://github.com/cloud-copilot/iam-expand/compare/v0.11.38...v0.11.39) (2025-11-08)
 
 ## [0.11.38](https://github.com/cloud-copilot/iam-expand/compare/v0.11.37...v0.11.38) (2025-11-01)
