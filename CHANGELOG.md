@@ -1,3 +1,5 @@
+## [0.11.50](https://github.com/cloud-copilot/iam-expand/compare/v0.11.49...v0.11.50) (2026-01-19)
+
 ## [0.11.49](https://github.com/cloud-copilot/iam-expand/compare/v0.11.48...v0.11.49) (2026-01-11)
 
 ## [0.11.48](https://github.com/cloud-copilot/iam-expand/compare/v0.11.47...v0.11.48) (2026-01-03)
