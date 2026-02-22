@@ -114,7 +114,7 @@ async function run() {
     const version = await iamDataVersion()
     const updatedAt = await iamDataUpdatedAt()
     console.log(`${dataPackage} version: ${version}`)
-    console.log(`Data last updated: ${await iamDataUpdatedAt()}`)
+    console.log(`Data last updated: ${updatedAt}`)
     console.log(`Update with either:`)
     console.log(`  npm update ${dataPackage}`)
     console.log(`  npm update -g ${dataPackage}`)

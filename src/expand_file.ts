@@ -1,4 +1,4 @@
-import { expandIamActions, ExpandIamActionsOptions } from './expand.js'
+import { expandIamActions, type ExpandIamActionsOptions } from './expand.js'
 import { invertIamActions } from './invert.js'
 
 export interface ExpandJsonDocumentOptions extends ExpandIamActionsOptions {

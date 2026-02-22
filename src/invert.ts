@@ -3,14 +3,10 @@ import { allAsterisksPattern, convertStringToPattern } from './util.js'
 
 export interface InvertIamActionsOptions {}
 
-const defaultOptions: InvertIamActionsOptions = {}
-
 export async function invertIamActions(
   actionStringOrStrings: string | string[],
   overrideOptions?: Partial<InvertIamActionsOptions>
 ): Promise<string[]> {
-  const options = { ...defaultOptions, ...overrideOptions }
-
   if (!actionStringOrStrings) {
     throw new Error('at least one action must be provided to invert')
   }

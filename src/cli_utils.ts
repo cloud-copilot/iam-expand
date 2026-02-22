@@ -1,6 +1,6 @@
 import { readStdin } from '@cloud-copilot/cli'
-import { ExpandIamActionsOptions, InvalidActionBehavior } from './expand.js'
-import { expandJsonDocument, ExpandJsonDocumentOptions } from './expand_file.js'
+import { type ExpandIamActionsOptions, InvalidActionBehavior } from './expand.js'
+import { expandJsonDocument, type ExpandJsonDocumentOptions } from './expand_file.js'
 
 interface CliOptions extends ExpandIamActionsOptions, ExpandJsonDocumentOptions {
   invert: boolean
