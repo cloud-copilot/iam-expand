@@ -66,7 +66,7 @@ const defaultOptions: ExpandIamActionsOptions = {
  *
  * @param actionStringOrStrings An IAM action or array IAM action(s) that may contain wildcards
  * @param overrideOptions Options to override the default behavior
- * @returns An array of expanded action strings flattend to a single array
+ * @returns An array of expanded action strings flattened to a single array
  */
 export async function expandIamActions(
   actionStringOrStrings: string | string[],

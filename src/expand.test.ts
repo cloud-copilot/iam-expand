@@ -400,7 +400,7 @@ describe('expand', () => {
 
   describe('action strings with question marks', () => {
     it('should expand the action string with all question marks', async () => {
-      //Given actionString has quesiton marks
+      //Given actionString has question marks
       const actionString = 's3:?????????'
 
       //And s3 service exists
@@ -421,7 +421,7 @@ describe('expand', () => {
     })
 
     it('should expand the action string with partial question marks', async () => {
-      //Given actionString has quesiton marks in part of the action
+      //Given actionString has question marks in part of the action
       const actionString = 's3:Get??????'
 
       //And s3 service exists

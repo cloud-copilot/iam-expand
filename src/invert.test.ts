@@ -97,7 +97,7 @@ describe('invertIamActions', () => {
     expect(result).toEqual(['ec2:GetObject', 's3:PutObject'])
   })
 
-  it('shoud exclude multiple patterns for a single service', async () => {
+  it('should exclude multiple patterns for a single service', async () => {
     //Given multiple patterns to exclude for a single service
     const actionString = ['s3:Get*', 's3:Put*']
     //And there are two services with actions
