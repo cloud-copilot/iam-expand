@@ -1,5 +1,5 @@
 import { iamActionExists, iamActionsForService, iamServiceExists } from '@cloud-copilot/iam-data'
-import { convertStringToPattern, unescapeUnicodeCharacters } from './util.js'
+import { parseIamActionParts, unescapeUnicodeCharacters, wildcardMatches } from './util.js'
 
 /**
  * Check if the action supplied matches any known IAM actions.
@@ -8,11 +8,11 @@ import { convertStringToPattern, unescapeUnicodeCharacters } from './util.js'
  * @return true if the action matches at least one known IAM action, false otherwise.
  */
 export async function matchesAnyAction(action: string): Promise<boolean> {
-  const parts = action.split(':')
-  if (parts.length !== 2) {
+  const parts = parseIamActionParts(action)
+  if (!parts) {
     return false
   }
-  const [service, actionName] = parts
+  const { service, actionName } = parts
 
   const serviceExists = await iamServiceExists(service)
   if (!serviceExists) {
@@ -34,6 +34,5 @@ export async function matchesAnyAction(action: string): Promise<boolean> {
  * @param pattern the pattern to match against, may contain wildcards
  */
 export function actionMatchesPattern(action: string, pattern: string): boolean {
-  const regex = convertStringToPattern(unescapeUnicodeCharacters(pattern))
-  return regex.test(unescapeUnicodeCharacters(action))
+  return wildcardMatches(unescapeUnicodeCharacters(pattern), unescapeUnicodeCharacters(action))
 }

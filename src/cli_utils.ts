@@ -45,7 +45,18 @@ export async function parseStdIn(
     return { object }
   } catch (err: any) {}
 
-  const lines = data.split('\n')
-  const actions = lines.flatMap((line) => extractActionsFromLineOfInput(line))
+  const actions: string[] = []
+  let lineStartIndex = 0
+  while (lineStartIndex <= data.length) {
+    const nextLineBreakIndex = data.indexOf('\n', lineStartIndex)
+    const lineEndIndex = nextLineBreakIndex === -1 ? data.length : nextLineBreakIndex
+    actions.push(...extractActionsFromLineOfInput(data.slice(lineStartIndex, lineEndIndex)))
+
+    if (nextLineBreakIndex === -1) {
+      break
+    }
+    lineStartIndex = nextLineBreakIndex + 1
+  }
+
   return { strings: actions }
 }

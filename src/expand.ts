@@ -5,7 +5,12 @@ import {
   iamServiceExists,
   iamServiceKeys
 } from '@cloud-copilot/iam-data'
-import { allAsterisksPattern, convertStringToPattern, unescapeUnicodeCharacters } from './util.js'
+import {
+  isAllAsterisks,
+  parseIamActionParts,
+  unescapeUnicodeCharacters,
+  wildcardMatches
+} from './util.js'
 
 export enum InvalidActionBehavior {
   Remove = 'Remove',
@@ -94,7 +99,7 @@ export async function expandIamActions(
 
   const actionString = unescapeUnicodeCharacters(actionStringOrStrings.trim())
 
-  if (actionString.match(allAsterisksPattern)) {
+  if (isAllAsterisks(actionString)) {
     if (options.expandAsterisk) {
       //If that's really what you want...
       const allActions = []
@@ -115,15 +120,16 @@ export async function expandIamActions(
     return []
   }
 
-  const parts = actionString.split(':')
-  if (parts.length !== 2) {
+  const parts = parseIamActionParts(actionString)
+  if (!parts) {
     if (options.errorOnInvalidFormat) {
       throw new Error(`Invalid action format: ${actionString}`)
     }
     return []
   }
 
-  const [service, wildcardActions] = parts.map((part) => part.toLowerCase())
+  const service = parts.service.toLowerCase()
+  const wildcardActions = parts.actionName.toLowerCase()
   if (!(await iamServiceExists(service))) {
     if (options.errorOnInvalidService) {
       throw new Error(`Service not found: ${service}`)
@@ -131,7 +137,7 @@ export async function expandIamActions(
     return []
   }
 
-  if (wildcardActions.match(allAsterisksPattern)) {
+  if (isAllAsterisks(wildcardActions)) {
     const actionsForService = await iamActionsForService(service)
     return actionsForService.map((action) => `${service}:${action}`)
   }
@@ -156,9 +162,8 @@ export async function expandIamActions(
   }
 
   const allActions = await iamActionsForService(service)
-  const regex = convertStringToPattern(wildcardActions)
   const matchingActions = allActions
-    .filter((action) => regex.test(action))
+    .filter((action) => wildcardMatches(wildcardActions, action))
     .map((action) => `${service}:${action}`)
   matchingActions.sort()
 
