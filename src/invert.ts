@@ -1,5 +1,5 @@
 import { iamActionsForService, iamServiceKeys } from '@cloud-copilot/iam-data'
-import { allAsterisksPattern, convertStringToPattern } from './util.js'
+import { isAllAsterisks, parseIamActionParts, wildcardMatches } from './util.js'
 
 export interface InvertIamActionsOptions {}
 
@@ -13,29 +13,30 @@ export async function invertIamActions(
 
   let allActionsFound = false
   const servicesToExclude = new Set<string>()
-  const excludePatterns: Record<string, RegExp[]> = {}
+  const excludePatterns: Record<string, string[]> = {}
 
   const actionsToInvert = Array.isArray(actionStringOrStrings)
     ? actionStringOrStrings
     : [actionStringOrStrings]
   for (const action of actionsToInvert) {
-    if (action.match(allAsterisksPattern)) {
+    if (isAllAsterisks(action)) {
       allActionsFound = true
       break
     }
-    const parts = action.split(':')
-    if (parts.length !== 2) {
+    const parts = parseIamActionParts(action)
+    if (!parts) {
       continue
     }
-    const [service, wildcardActions] = parts.map((part) => part.toLowerCase())
-    if (wildcardActions.match(allAsterisksPattern)) {
+    const service = parts.service.toLowerCase()
+    const wildcardActions = parts.actionName.toLowerCase()
+    if (isAllAsterisks(wildcardActions)) {
       servicesToExclude.add(service)
       continue
     }
     if (!excludePatterns[service]) {
       excludePatterns[service] = []
     }
-    excludePatterns[service].push(convertStringToPattern(wildcardActions))
+    excludePatterns[service].push(wildcardActions)
   }
 
   if (allActionsFound) {
@@ -55,7 +56,7 @@ export async function invertIamActions(
       }
       return serviceActions
         .filter((action) => {
-          return !excludePatternsForService.some((pattern) => action.match(pattern))
+          return !excludePatternsForService.some((pattern) => wildcardMatches(pattern, action))
         })
         .map((action) => `${serviceKey}:${action}`)
     })
