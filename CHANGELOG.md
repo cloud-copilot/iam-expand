@@ -1,3 +1,10 @@
+## [0.11.72](https://github.com/cloud-copilot/iam-expand/compare/v0.11.71...v0.11.72) (2026-06-22)
+
+
+### Features
+
+* Performance/memory improvements ([5113a1f](https://github.com/cloud-copilot/iam-expand/commit/5113a1fc29531e50f03b76b46eaccbe137236568))
+
 ## [0.11.71](https://github.com/cloud-copilot/iam-expand/compare/v0.11.70...v0.11.71) (2026-06-13)
 
 ## [0.11.70](https://github.com/cloud-copilot/iam-expand/compare/v0.11.69...v0.11.70) (2026-06-06)
